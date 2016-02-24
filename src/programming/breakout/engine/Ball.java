@@ -5,7 +5,7 @@ package programming.breakout.engine;
  */
 public class Ball extends Entity {
 	private double radius;
-
+			
 	/**
 	 * @return the radius
 	 */

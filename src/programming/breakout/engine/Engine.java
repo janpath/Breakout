@@ -1,0 +1,148 @@
+package programming.breakout.engine;
+
+import java.util.ArrayList;
+
+public class Engine implements Runnable {
+
+	/**
+	 * game state
+	 */
+	private boolean isPaused = false;
+
+	/**
+	 * Playing field
+	 */
+	private static final double PLAYING_FIELD_HEIGHT = 100;
+	private static final double PLAYING_FIELD_WIDTH = 40;
+
+	/**
+	 * Paddle
+	 */
+	private double paddleLength = 0.2 * PLAYING_FIELD_WIDTH;
+	private double paddleHeight = 0.1 * paddleLength;
+
+	/**
+	 * Bricks
+	 */
+	private ArrayList<Rectangle> bricks;
+	private int numberOfBrickRows = 12;
+	private int numberOfBrickCols = 6;
+	private double brickPaddingX = 0;
+	private double brickPaddingY = 0;
+
+	/**
+	 * Ball
+	 */
+	private static final Vector2D START_POS = new Vector2D(PLAYING_FIELD_WIDTH / 2, PLAYING_FIELD_HEIGHT / 2);
+	private static final double RADIUS = 2;
+	/* Velocity in units per frame */
+	private Vector2D velocity = new Vector2D(0.0, -2.0);
+	private Ball ball = createBall();
+
+	@Override
+	public void run() {
+
+		createBricks();
+		createBall();
+
+		while (isRunning()) {
+
+			moveBall();
+
+		}
+
+	}
+
+	private void moveBall() {
+
+		if (noCollisionPossible()) {
+			Vector2D newPosition = ball.getPosition().add(ball.getVelocity());
+			ball.setPosition(newPosition);
+		} else {
+			handleCollision();
+
+		}
+	}
+
+	private void handleCollision() {
+		switch (whichWall())
+
+	}
+
+	private int whichWall() {
+		// right
+		if (ball.getX() + (2 * RADIUS) >= PLAYING_FIELD_WIDTH) {
+			return 1;
+		}
+		// left
+		else if (ball.getX() <= 0) {
+			return 2;
+		}
+		// top
+		else if (ball.getY() <= 0) {
+			return 3;
+		}
+		// other
+		else {
+			return 4;
+		}
+	}
+
+	private boolean noCollisionPossible() {
+		if (ball.getY() < getLowestBrickY() && ball.getX() + (2 * RADIUS) < PLAYING_FIELD_WIDTH && ball.getX() > 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private double getLowestBrickY() {
+		double minY = Double.POSITIVE_INFINITY;
+		for (Rectangle r : bricks) {
+			minY = (r.getY() < minY) ? r.getY() : minY;
+		}
+		return minY;
+	}
+
+	private Ball createBall() {
+		Ball ball = new Ball();
+		ball.setRadius(RADIUS);
+		ball.setVelocity(velocity);
+		ball.setPosition(START_POS);
+		return ball;
+	}
+
+	private void createBricks() {
+
+		double brickSpacePerCol = PLAYING_FIELD_WIDTH - (brickPaddingX * numberOfBrickCols + 1);
+		double brickWidth = brickSpacePerCol / (numberOfBrickCols);
+		double brickSpacePerRow = PLAYING_FIELD_HEIGHT * 0.33 - (brickPaddingY * numberOfBrickRows + 1);
+		double brickHeight = brickSpacePerRow / (numberOfBrickRows);
+
+		for (int i = 0; i < numberOfBrickRows; i++) {
+
+			double x = (i * brickWidth) + brickPaddingX;
+
+			for (int j = 0; j < numberOfBrickCols; j++) {
+
+				double y = (j * brickHeight) + brickPaddingY;
+				Vector2D position = new Vector2D(x, y);
+				Rectangle brick = new Rectangle(position, brickHeight, brickWidth);
+				bricks.add(brick);
+			}
+
+		}
+
+	}
+
+	private void setGameState() {
+		GameState gameState = new GameState();
+		gameState.setHeight(PLAYING_FIELD_HEIGHT);
+		gameState.setWidth(PLAYING_FIELD_WIDTH);
+	}
+
+	private boolean isRunning() {
+		return ball.getY() < PLAYING_FIELD_HEIGHT && !isPaused;
+	}
+
+}
