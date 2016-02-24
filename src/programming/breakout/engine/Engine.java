@@ -38,6 +38,7 @@ public class Engine implements Runnable {
 	/**
 	 * Paddle
 	 */
+	private Rectangle paddle = createPaddle();
 	private double paddleLength = 0.2 * PLAYING_FIELD_WIDTH;
 	private double paddleHeight = 0.1 * paddleLength;
 
@@ -62,7 +63,7 @@ public class Engine implements Runnable {
 	/**
 	 * How much to wait between each frame
 	 */
-	private static final REFRESH_RATE = 20;
+	private static final int REFRESH_RATE = 20;
 
 	private GameState state;
 
@@ -74,20 +75,32 @@ public class Engine implements Runnable {
 	public void run() {
 
 		createBricks();
-		createBall();
-
+		
 		while (isRunning()) {
 			long start = System.currentTimeMillis();
 			moveBall();
-			long elapsed = System.currentTimeMillis() - end;
+			updateEntityList();
+			
+			long elapsed = start - System.currentTimeMillis();
 
 			try {
 				Thread.sleep(REFRESH_RATE - elapsed);
-			} catch(InterruptedException ex) {}
+			} catch (InterruptedException ex) {
+			}
 		}
 
 	}
 
+	
+	
+	private void updateEntityList() {
+		ArrayList<Entity> list = state.getEntityList();
+		list.clear();
+		list.addAll(bricks);
+		list.add(ball);
+		list.add(paddle);
+	}
+	
 	private void moveBall() {
 
 		if (noCollisionPossible()) {
@@ -100,13 +113,71 @@ public class Engine implements Runnable {
 	}
 
 	private void handleCollision() {
-		switch (whichWall())
+		double x = ball.getVelocity().getX0();
+		double y = ball.getVelocity().getX1();
 
+		switch (whichWall()) {
+		// right
+		case 1:
+			ball.setVelocity(new Vector2D(-x, y));
+			break;
+		// left
+		case 2:
+			ball.setVelocity(new Vector2D(-x, y));
+			break;
+		// top
+		case 3:
+			ball.setVelocity(new Vector2D(x, -y));
+			break;
+		// other
+		case 4:
+			handleBrickCollision();
+		}
+
+	}
+
+	private void handleBrickCollision() {
+		if (whichBrick() != null) {
+			Rectangle brick = whichBrick();
+
+			Vector2D brickCenter = new Vector2D(brick.getX() + brick.getHeight() / 2,
+					brick.getY() + brick.getWidth() / 2);
+			Vector2D ballCenter = new Vector2D(ball.getX() + ball.getRadius(), ball.getY() + ball.getRadius());
+			Vector2D referenceVector = ballCenter.add(brickCenter);
+
+			double x = brick.getWidth() / 2 - referenceVector.getX0();
+			double y = brick.getHeight() / 2 - referenceVector.getX1();
+
+			double xVel = ball.getVelocity().getX0();
+			double yVel = ball.getVelocity().getX1();
+
+			if (x < y) {
+				ball.setVelocity(new Vector2D(-xVel, yVel));
+			} else {
+				ball.setVelocity(new Vector2D(xVel, -yVel));
 			}
+
+			bricks.remove(brick);
+		}
+
+	}
+
+	private Rectangle whichBrick() {
+
+		for (Rectangle r : bricks) {
+
+			if (ball.getY() + (2 * ball.getRadius()) >= r.getY() && ball.getY() <= r.getY() + r.getHeight()) {
+				if (ball.getX() + (2 * ball.getRadius()) >= r.getX() && ball.getX() <= r.getX() + r.getWidth()) {
+					return r;
+				}
+			}
+		}
+		return null;
+	}
 
 	private int whichWall() {
 		// right
-		if (ball.getX() + (2 * RADIUS) >= PLAYING_FIELD_WIDTH) {
+		if (ball.getX() + (2 * ball.getRadius()) >= PLAYING_FIELD_WIDTH) {
 			return 1;
 		}
 		// left
@@ -124,7 +195,9 @@ public class Engine implements Runnable {
 	}
 
 	private boolean noCollisionPossible() {
-		if (ball.getY() < getLowestBrickY() && ball.getX() + (2 * RADIUS) < PLAYING_FIELD_WIDTH && ball.getX() > 0) {
+		// no collision possible
+		if (ball.getY() < getLowestBrickY() && ball.getX() + (2 * ball.getRadius()) < PLAYING_FIELD_WIDTH
+				&& ball.getX() > 0) {
 			return true;
 		} else {
 			return false;
@@ -139,11 +212,14 @@ public class Engine implements Runnable {
 		return minY;
 	}
 
+	private Paddle createPaddle() {
+		Rectangle paddle = new Rectangle();
+		return paddle
+	}
+	
 	private Ball createBall() {
-		Ball ball = new Ball();
-		ball.setRadius(RADIUS);
+		Ball ball = new Ball(START_POS, RADIUS);
 		ball.setVelocity(velocity);
-		ball.setPosition(START_POS);
 		return ball;
 	}
 
