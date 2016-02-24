@@ -38,6 +38,7 @@ public class Engine implements Runnable {
 	/**
 	 * Paddle
 	 */
+	private Rectangle paddle = createPaddle();
 	private double paddleLength = 0.2 * PLAYING_FIELD_WIDTH;
 	private double paddleHeight = 0.1 * paddleLength;
 
@@ -74,11 +75,12 @@ public class Engine implements Runnable {
 	public void run() {
 
 		createBricks();
-		createBall();
-
+		
 		while (isRunning()) {
 			long start = System.currentTimeMillis();
 			moveBall();
+			updateEntityList();
+			
 			long elapsed = start - System.currentTimeMillis();
 
 			try {
@@ -89,6 +91,16 @@ public class Engine implements Runnable {
 
 	}
 
+	
+	
+	private void updateEntityList() {
+		ArrayList<Entity> list = state.getEntityList();
+		list.clear();
+		list.addAll(bricks);
+		list.add(ball);
+		list.add(paddle);
+	}
+	
 	private void moveBall() {
 
 		if (noCollisionPossible()) {
@@ -187,10 +199,10 @@ public class Engine implements Runnable {
 		if (ball.getY() < getLowestBrickY() && ball.getX() + (2 * ball.getRadius()) < PLAYING_FIELD_WIDTH
 				&& ball.getX() > 0) {
 			return true;
-		else {
+		} else {
 			return false;
 		}
-		}
+	}
 
 	private double getLowestBrickY() {
 		double minY = Double.POSITIVE_INFINITY;
@@ -200,6 +212,11 @@ public class Engine implements Runnable {
 		return minY;
 	}
 
+	private Paddle createPaddle() {
+		Rectangle paddle = new Rectangle();
+		return paddle
+	}
+	
 	private Ball createBall() {
 		Ball ball = new Ball(START_POS, RADIUS);
 		ball.setVelocity(velocity);
