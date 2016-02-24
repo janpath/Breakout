@@ -1,7 +1,9 @@
 package programming.breakout.engine;
 
+import programming.breakout.engine.Entity;
+
 public class Rectangle extends Entity {
-	
+
 	/**
 	 * instance variables
 	 */
@@ -23,21 +25,21 @@ public class Rectangle extends Entity {
 	public double getHeight() {
 		return height;
 	}
-	
+
 	/**
 	 * Sets the height of the Rectangle
 	 */
 	void setHeight(double height) {
 		this.height = height;
 	}
-	
+
 	/**
 	 * Returns the width of the Rectangle
 	 */
 	public double getWidth() {
 		return width;
 	}
-	
+
 	/**
 	 * Sets the width of the Rectangle
 	 */
