@@ -12,6 +12,8 @@ public class GameState extends Observable {
 	private boolean paused = false;
 	private int score = 0;
 
+	private double width, height;
+
 	/**
 	 * Get a list of all the objects on the playing field
 	 * @return List of objects on playing field
@@ -48,5 +50,33 @@ public class GameState extends Observable {
 	 */
 	public void setScore(int score) {
 		this.score = score;
+	}
+
+	/**
+	 * @return the width
+	 */
+	public double getWidth() {
+		return width;
+	}
+
+	/**
+	 * @param width the width to set
+	 */
+	void setWidth(double width) {
+		this.width = width;
+	}
+
+	/**
+	 * @return the height
+	 */
+	public double getHeight() {
+		return height;
+	}
+
+	/**
+	 * @param height the height to set
+	 */
+	void setHeight(double height) {
+		this.height = height;
 	}
 }
