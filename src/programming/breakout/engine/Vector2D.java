@@ -26,4 +26,13 @@ public class Vector2D {
 		this.x0 = x0;
 		this.x1 = x1;
 	}
+
+	/**
+	 * Add two vectors
+	 * @param otherVector vector to add
+	 * @return resulting vector from addition
+	 */
+	public Vector2D add(Vector2D otherVector) {
+		return new Vector2D(getX0() + otherVector.getX0(), getX1() + otherVector.getX1());
+	}
 }
