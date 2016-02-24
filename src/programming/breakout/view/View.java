@@ -156,6 +156,7 @@ public class View extends GraphicsProgram implements Observer {
 														(getHeight() - state.getHeight() * scale)/2,
 														state.getWidth() * scale,
 														state.getHeight() * scale);
+		field.setColor(Color.WHITE);
 		field.setFilled(true);
 		buffer.add(field);
 
