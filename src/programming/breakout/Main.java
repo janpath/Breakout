@@ -33,6 +33,6 @@ public class Main {
 		Thread engineThread = new Thread(engine);
 		engineThread.start();
 
-		view.main(args);
+		view.start();
 	}
 }
