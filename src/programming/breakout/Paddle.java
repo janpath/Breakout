@@ -7,10 +7,10 @@ import java.awt.event.MouseListener;
 import acm.graphics.GRoundRect;
 
 public class Paddle extends GRoundRect implements MouseMotionListener, MouseListener {
-	
-	private boolean mouseIsOnCanvas = false;	
+
+	private boolean mouseIsOnCanvas = false;
 	private boolean mouseIsActive = false;
-	
+
 	/** The last x position of the mouse. */
 	private double lastX;
 
