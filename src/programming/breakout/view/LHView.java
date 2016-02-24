@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright: 2016 Jan Path
  *            2016 Felix von der Heide
  *
