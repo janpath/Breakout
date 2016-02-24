@@ -18,3 +18,27 @@
  * along with Breakout.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+package programming.breakout.engine;
+
+import java.util.ArrayList;
+
+import programming.breakout.engine.Ball;
+import programming.breakout.engine.Rectangle;
+
+public class DummyEngine implements Runnable {
+	private GameState state;
+
+	public DummyEngine(GameState state) {
+		this.state = state;
+		state.setWidth(80);
+		state.setHeight(100);
+		ArrayList<Entity> entities = state.getEntityList();
+		entities.add(new Ball(new Vector2D(5, 80), 1));
+		entities.add(new Rectangle(new Vector2D(3, 98), 5, 1));
+	}
+
+	@Override
+	public void run() {
+
+	}
+}

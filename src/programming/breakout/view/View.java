@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright: 2016 Jan Path
  *            2016 Felix von der Heide
  *
@@ -130,6 +130,11 @@ public class View extends GraphicsProgram implements Observer {
 																				 + entity.getClass());
 		}
 
+		double offsetX = ( getWidth() - state.getWidth() * scale )/2;
+		double offsetY = ( getHeight() - state.getHeight() * scale )/2;
+
+		obj.setLocation(obj.getX() + offsetX, obj.getY() + offsetY);
+
 		return obj;
 	}
 
@@ -151,6 +156,7 @@ public class View extends GraphicsProgram implements Observer {
 														(getHeight() - state.getHeight() * scale)/2,
 														state.getWidth() * scale,
 														state.getHeight() * scale);
+		field.setColor(Color.WHITE);
 		field.setFilled(true);
 		buffer.add(field);
 

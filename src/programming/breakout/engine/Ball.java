@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright: 2016 Jan Path
  *            2016 Felix von der Heide
  *
@@ -25,7 +25,12 @@ package programming.breakout.engine;
  */
 public class Ball extends Entity {
 	private double radius;
-			
+
+	public Ball(Vector2D position, double radius) {
+		setPosition(position);
+		this.radius = radius;
+	}
+
 	/**
 	 * @return the radius
 	 */
