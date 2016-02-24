@@ -85,13 +85,67 @@ public class Engine implements Runnable {
 	}
 
 	private void handleCollision() {
-		switch (whichWall())
+		double x = ball.getVelocity().getX0();
+		double y = ball.getVelocity().getX1();
 
+		switch (whichWall()) {
+		// right
+		case 1:
+			ball.setVelocity(new Vector2D(-x, y));
+			break;
+		// left
+		case 2:
+			ball.setVelocity(new Vector2D(-x, y));
+			break;
+		// top
+		case 3:
+			ball.setVelocity(new Vector2D(x, -y));
+			break;
+		// other
+		case 4:
+			handleBrickCollision();
+		}
+
+	}
+
+	private void handleBrickCollision() {
+		Rectangle brick = whichBrick();	
+		
+		Vector2D brickCenter = new Vector2D(brick.getX() + brick.getHeight() / 2, brick.getY() + brick.getWidth() / 2);
+		Vector2D ballCenter = new Vector2D(ball.getX() + ball.getRadius(), ball.getY() + ball.getRadius());
+		Vector2D referenceVector = ballCenter.add(brickCenter);
+
+		double x = brick.getWidth() / 2 - referenceVector.getX0() ;
+		double y = brick.getHeight() / 2 - referenceVector.getX1();
+		
+		double xVel = ball.getVelocity().getX0();
+		double yVel = ball.getVelocity().getX1();
+
+		if (x < y) {
+			ball.setVelocity(new Vector2D(-xVel, yVel));
+		} else {
+			ball.setVelocity(new Vector2D(xVel, -yVel));
+		}
+
+		bricks.remove(brick);
+	}
+
+	private Rectangle whichBrick() {
+
+		for (Rectangle r : bricks) {
+
+			if (ball.getY() + (2 * ball.getRadius()) >= r.getY() && ball.getY() <= r.getY() + r.getHeight()) {
+				if (ball.getX() + (2 * ball.getRadius()) >= r.getX() && ball.getX() <= r.getX() + r.getWidth()) {
+					return r;
+				}
+			}
+		}
+		return null;
 	}
 
 	private int whichWall() {
 		// right
-		if (ball.getX() + (2 * RADIUS) >= PLAYING_FIELD_WIDTH) {
+		if (ball.getX() + (2 * ball.getRadius()) >= PLAYING_FIELD_WIDTH) {
 			return 1;
 		}
 		// left
@@ -109,7 +163,8 @@ public class Engine implements Runnable {
 	}
 
 	private boolean noCollisionPossible() {
-		if (ball.getY() < getLowestBrickY() && ball.getX() + (2 * RADIUS) < PLAYING_FIELD_WIDTH && ball.getX() > 0) {
+		if (ball.getY() < getLowestBrickY() && ball.getX() + (2 * ball.getRadius()) < PLAYING_FIELD_WIDTH
+				&& ball.getX() > 0) {
 			return true;
 		} else {
 			return false;
