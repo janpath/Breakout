@@ -62,7 +62,7 @@ public class Engine implements Runnable {
 	/**
 	 * How much to wait between each frame
 	 */
-	private static final REFRESH_RATE = 20;
+	private static final int REFRESH_RATE = 20;
 
 	private GameState state;
 
@@ -79,7 +79,7 @@ public class Engine implements Runnable {
 		while (isRunning()) {
 			long start = System.currentTimeMillis();
 			moveBall();
-			long elapsed = System.currentTimeMillis() - end;
+			long elapsed = start - System.currentTimeMillis();
 
 			try {
 				Thread.sleep(REFRESH_RATE - elapsed);
