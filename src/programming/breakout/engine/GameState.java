@@ -53,7 +53,7 @@ public class GameState extends Observable {
 	}
 
 	/**
-	 * @return the width
+	 * @return the width of the playing field
 	 */
 	public double getWidth() {
 		return width;
@@ -67,7 +67,7 @@ public class GameState extends Observable {
 	}
 
 	/**
-	 * @return the height
+	 * @return the height of the playing field
 	 */
 	public double getHeight() {
 		return height;
