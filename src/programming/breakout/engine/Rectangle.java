@@ -33,7 +33,7 @@ public class Rectangle extends Entity {
 	/**
 	 * primary constructor
 	 */
-	Rectangle(Vector2D position, double height, double width) {
+	Rectangle(Vector2D position, double width, double height) {
 		this.setPosition(position);
 		this.height = height;
 		this.width = width;
