@@ -25,10 +25,9 @@ package programming.breakout.engine;
  */
 public class Ball extends Entity {
 	private double radius;
-	private Vector2D position;
 
 	public Ball(Vector2D position, double radius) {
-		this.position = position;
+		setPosition(position);
 		this.radius = radius;
 	}
 
@@ -44,19 +43,5 @@ public class Ball extends Entity {
 	 */
 	void setRadius(double radius) {
 		this.radius = radius;
-	}
-
-	/**
-	 * @return the position
-	 */
-	public Vector2D getPosition() {
-		return position;
-	}
-
-	/**
-	 * @param position the position to set
-	 */
-	public void setPosition(Vector2D position) {
-		this.position = position;
 	}
 }
