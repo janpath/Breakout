@@ -18,8 +18,8 @@ public class Interface extends GCompound {
 	/**
 	 * Instance variables that specify the playingfield size
 	 */
-	private double fieldHeight = 800;
-	private double fieldWidth = 500;
+	private static double fieldHeight = 800;
+	private static double fieldWidth = 500;
 	private double fieldX = margin_left;
 	private double fieldY = margin_top;
 
@@ -75,11 +75,11 @@ public class Interface extends GCompound {
 		this.fieldHeight = height;
 	}
 	
-	public double getFieldWidth() {
+	public static double getFieldWidth() {
 		return fieldWidth;
 	}
 	
-	public double getFieldHeight() {
+	public static double getFieldHeight() {
 		return fieldHeight;
 	}
 	

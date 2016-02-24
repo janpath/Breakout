@@ -17,10 +17,10 @@ public class Breakout extends GraphicsProgram {
 	static final double SHIFT = 2.0;
 
 	/** The starting coordinate in x direction */
-	static final double START_X = WIDTH / 2;
+	static final double START_X = Interface.getFieldWidth() / 2;
 
 	/** The starting coordinate in y direction */
-	static final double START_Y = HEIGHT / 2;
+	static final double START_Y = Interface.getFieldHeight() / 2;
 
 	public void run() {
 		
@@ -40,7 +40,7 @@ public class Breakout extends GraphicsProgram {
 		add(ball);
 		
 		// Initialize paddle
-		Paddle paddle = new Paddle( WIDTH/2, HEIGHT - 20, 70);
+		Paddle paddle = new Paddle( Interface.getFieldWidth()/2, Interface.getFieldHeight()/2 - 20, 70);
 		add(paddle);		
 		addMouseListeners(paddle);
 		
@@ -49,7 +49,7 @@ public class Breakout extends GraphicsProgram {
 		while (isOngoing(ball)) {
 
 			ball.moveInDirection(SHIFT, direction);
-			direction = getNewDirection(ball);
+			direction = ball.getNewDirection();
 
 			pause(PAUSE_TIME);
 		}
@@ -58,36 +58,6 @@ public class Breakout extends GraphicsProgram {
 		add(end);
 		
 		
-	}
-
-	private double getNewDirection(Ball ball) {
-
-		double oldDirection = ball.getDirection();
-
-		// right
-		if (ball.getX() + BALL_SIZE >= WIDTH) {
-			return 180 - oldDirection;
-		}
-		// left
-		else if (ball.getX() <= 0) {
-			return 180 - oldDirection;
-		}
-		// top
-		else if (ball.getY() <= 0) {
-			return 360 - oldDirection;
-		}
-//		// bottom
-//		else if (ball.getY() + BALL_SIZE >= HEIGHT)
-//		{
-//			return 360 - oldDirection;
-//		}
-		// other
-		else {
-
-			return oldDirection;
-
-		}
-
 	}
 
 	/** returns true as long as the ball is still on the field */

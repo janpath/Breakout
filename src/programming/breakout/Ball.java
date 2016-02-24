@@ -108,5 +108,35 @@ public class Ball extends GOval {
 			return "no intersection";
 		}
 	}
+	
+	public double getNewDirection() {
 
+		double oldDirection = getDirection();
+
+		// right
+		if (getX() + size >= Interface.getFieldWidth()) {
+			return 180 - oldDirection;
+		}
+		// left
+		else if (getX() <= 0) {
+			return 180 - oldDirection;
+		}
+		// top
+		else if (getY() <= 0) {
+			return 360 - oldDirection;
+		}
+//		// bottom
+//		else if (getY() + size >= HEIGHT)
+//		{
+//			return 360 - oldDirection;
+//		}
+		// other
+		else {
+
+			return oldDirection;
+
+		}
+
+	}
+	
 }
