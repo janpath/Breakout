@@ -10,13 +10,13 @@ public class GameState extends Observable {
 
 	private ArrayList<Entity> entities = new ArrayList<Entity>();
 	private boolean paused = false;
-	private int score = 06
+	private int score = 0;
 
-		/**
-		 * Get a list of all the objects on the playing field
-		 * @return List of objects on playing field
-		 */
-		public ArrayList<Entity> getEntityList() {
+	/**
+	 * Get a list of all the objects on the playing field
+	 * @return List of objects on playing field
+	 */
+	public ArrayList<Entity> getEntityList() {
 		return entities;
 	}
 
@@ -24,9 +24,9 @@ public class GameState extends Observable {
 	 * Whether the game is paused or running
 	 * @return {@code true} if the game is paused, {@false} if it is running
 	 */
-		public boolean getPaused() {
-			return paused;
-		}
+	public boolean getPaused() {
+		return paused;
+	}
 
 	/**
 	 * Set whether the game is paused or running.
