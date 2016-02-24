@@ -195,10 +195,8 @@ public class Engine implements Runnable {
 	}
 
 	private Ball createBall() {
-		Ball ball = new Ball();
-		ball.setRadius(RADIUS);
-		ball.setVelocity(velocity);
-		ball.setPosition(START_POS);
+		Ball ball = new Ball(START_POS, RADIUS);		
+		ball.setVelocity(velocity);		
 		return ball;
 	}
 
