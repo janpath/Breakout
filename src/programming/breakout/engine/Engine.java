@@ -64,6 +64,12 @@ public class Engine implements Runnable {
 	 */
 	private static final REFRESH_RATE = 20;
 
+	private GameState state;
+
+	public Engine(GameState state) {
+		this.state = state;
+	}
+
 	@Override
 	public void run() {
 
@@ -165,9 +171,8 @@ public class Engine implements Runnable {
 	}
 
 	private void setGameState() {
-		GameState gameState = new GameState();
-		gameState.setHeight(PLAYING_FIELD_HEIGHT);
-		gameState.setWidth(PLAYING_FIELD_WIDTH);
+		state.setHeight(PLAYING_FIELD_HEIGHT);
+		state.setWidth(PLAYING_FIELD_WIDTH);
 	}
 
 	private boolean isRunning() {
