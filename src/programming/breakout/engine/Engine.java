@@ -59,6 +59,11 @@ public class Engine implements Runnable {
 	private Vector2D velocity = new Vector2D(0.0, -2.0);
 	private Ball ball = createBall();
 
+	/**
+	 * How much to wait between each frame
+	 */
+	private static final REFRESH_RATE = 20;
+
 	@Override
 	public void run() {
 
@@ -66,9 +71,13 @@ public class Engine implements Runnable {
 		createBall();
 
 		while (isRunning()) {
-
+			long start = System.currentTimeMillis();
 			moveBall();
+			long elapsed = System.currentTimeMillis() - end;
 
+			try {
+				Thread.sleep(REFRESH_RATE - elapsed);
+			} catch(InterruptedException ex) {}
 		}
 
 	}
@@ -87,7 +96,7 @@ public class Engine implements Runnable {
 	private void handleCollision() {
 		switch (whichWall())
 
-	}
+			}
 
 	private int whichWall() {
 		// right
