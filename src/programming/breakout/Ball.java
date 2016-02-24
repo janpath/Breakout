@@ -36,15 +36,13 @@ public class Ball extends GOval {
 		assert (direction != -0.123456) : "Direction has not been initialized";
 		return direction;
 	}
-	
+
 	/**
 	 * Returns true for a Rectangle, which is defined by the bounds of the given
 	 * GObject, intersect the bounds of this Ball.
 	 */
 	public boolean intersects(GObject obj) {
-
 		return obj.getBounds().intersects(this.getBounds());
-
 	}
 
 	/**
@@ -108,7 +106,7 @@ public class Ball extends GOval {
 			return "no intersection";
 		}
 	}
-	
+
 	public double getNewDirection() {
 
 		double oldDirection = getDirection();

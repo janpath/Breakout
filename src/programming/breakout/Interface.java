@@ -6,82 +6,79 @@ import acm.graphics.GLabel;
 
 public class Interface extends GCompound {
 
-	
 	/**
 	 * Instance variables that specify the margin size
 	 */
-	private double margin_top = 10;
-	private double margin_bot = 10;
-	private double margin_left = 10;
-	private double margin_right = 100;
-	
+	private static double margin_top = 10;
+	private static double margin_bot = 10;
+	private static double margin_left = 10;
+	private static double margin_right = 100;
+
 	/**
 	 * Instance variables that specify the playingfield size
 	 */
 	private static double fieldHeight = 800;
 	private static double fieldWidth = 500;
-	private double fieldX = margin_left;
-	private double fieldY = margin_top;
+	private static double fieldX = margin_left;
+	private static double fieldY = margin_top;
 
 	/**
 	 * Instance variables for every Object in the Interface
 	 */
 
-	
 	public Interface () {
 		this.add(createMargin());
 		this.add(createField());
-//		this.add(scores);
+		//		this.add(scores);
 	}
-	
-//	private void createScores() {
-//		GLabel scores = new GLabel("Scores");
-//		scores.setLocation();
-//		this.scores = scores;
-//	}
-	
+
+	//	private void createScores() {
+	//		GLabel scores = new GLabel("Scores");
+	//		scores.setLocation();
+	//		this.scores = scores;
+	//	}
+
 	private GRect createMargin() {
 		GRect margin = new GRect(0, 0, fieldWidth + margin_right + margin_left, fieldHeight + margin_top + margin_bot);
 		margin.setVisible(false);
 		return margin;
 	}
-	
+
 	private GRect createField() {
-		GRect field = new GRect(fieldX, fieldY, fieldWidth, fieldHeight);		
+		GRect field = new GRect(fieldX, fieldY, fieldWidth, fieldHeight);
 		return field;
 	}
-	
-	public void setFieldX (double x) {
-		this.fieldX = x;
+
+	public static void setFieldX (double x) {
+		fieldX = x;
 	}
-	
-	public void setFieldY (double y) {
-		this.fieldY = y;
+
+	public static void setFieldY (double y) {
+		fieldY = y;
 	}
-	
-	public double getFieldX () {
+
+	public static double getFieldX () {
 		return fieldX;
 	}
-	
-	public double getFieldY () {
+
+	public static double getFieldY () {
 		return fieldY;
 	}
-	
-	public void setFieldWidth(double width) {
-		this.fieldWidth = width;
+
+	public static void setFieldWidth(double width) {
+		fieldWidth = width;
 	}
-	
-	public void setFieldHeight(double height) {
-		this.fieldHeight = height;
+
+	public static void setFieldHeight(double height) {
+		fieldHeight = height;
 	}
-	
+
 	public static double getFieldWidth() {
 		return fieldWidth;
 	}
-	
+
 	public static double getFieldHeight() {
 		return fieldHeight;
 	}
-	
-	
+
 }
