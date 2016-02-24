@@ -130,6 +130,11 @@ public class View extends GraphicsProgram implements Observer {
 																				 + entity.getClass());
 		}
 
+		double offsetX = ( getWidth() - state.getWidth() * scale )/2;
+		double offsetY = ( getHeight() - state.getHeight() * scale )/2;
+
+		obj.setLocation(obj.getX() + offsetX, obj.getY() + offsetY);
+
 		return obj;
 	}
 
