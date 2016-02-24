@@ -83,7 +83,8 @@ public class Engine implements Runnable {
 
 			try {
 				Thread.sleep(REFRESH_RATE - elapsed);
-			} catch(InterruptedException ex) {}
+			} catch (InterruptedException ex) {
+			}
 		}
 
 	}
@@ -124,25 +125,29 @@ public class Engine implements Runnable {
 	}
 
 	private void handleBrickCollision() {
-		Rectangle brick = whichBrick();	
-		
-		Vector2D brickCenter = new Vector2D(brick.getX() + brick.getHeight() / 2, brick.getY() + brick.getWidth() / 2);
-		Vector2D ballCenter = new Vector2D(ball.getX() + ball.getRadius(), ball.getY() + ball.getRadius());
-		Vector2D referenceVector = ballCenter.add(brickCenter);
+		if (whichBrick() != null) {
+			Rectangle brick = whichBrick();
 
-		double x = brick.getWidth() / 2 - referenceVector.getX0() ;
-		double y = brick.getHeight() / 2 - referenceVector.getX1();
-		
-		double xVel = ball.getVelocity().getX0();
-		double yVel = ball.getVelocity().getX1();
+			Vector2D brickCenter = new Vector2D(brick.getX() + brick.getHeight() / 2,
+					brick.getY() + brick.getWidth() / 2);
+			Vector2D ballCenter = new Vector2D(ball.getX() + ball.getRadius(), ball.getY() + ball.getRadius());
+			Vector2D referenceVector = ballCenter.add(brickCenter);
 
-		if (x < y) {
-			ball.setVelocity(new Vector2D(-xVel, yVel));
-		} else {
-			ball.setVelocity(new Vector2D(xVel, -yVel));
+			double x = brick.getWidth() / 2 - referenceVector.getX0();
+			double y = brick.getHeight() / 2 - referenceVector.getX1();
+
+			double xVel = ball.getVelocity().getX0();
+			double yVel = ball.getVelocity().getX1();
+
+			if (x < y) {
+				ball.setVelocity(new Vector2D(-xVel, yVel));
+			} else {
+				ball.setVelocity(new Vector2D(xVel, -yVel));
+			}
+
+			bricks.remove(brick);
 		}
 
-		bricks.remove(brick);
 	}
 
 	private Rectangle whichBrick() {
@@ -156,7 +161,7 @@ public class Engine implements Runnable {
 			}
 		}
 		return null;
-			}
+	}
 
 	private int whichWall() {
 		// right
@@ -178,13 +183,14 @@ public class Engine implements Runnable {
 	}
 
 	private boolean noCollisionPossible() {
+		// no collision possible
 		if (ball.getY() < getLowestBrickY() && ball.getX() + (2 * ball.getRadius()) < PLAYING_FIELD_WIDTH
 				&& ball.getX() > 0) {
 			return true;
-		} else {
+		else {
 			return false;
 		}
-	}
+		}
 
 	private double getLowestBrickY() {
 		double minY = Double.POSITIVE_INFINITY;
@@ -195,8 +201,8 @@ public class Engine implements Runnable {
 	}
 
 	private Ball createBall() {
-		Ball ball = new Ball(START_POS, RADIUS);		
-		ball.setVelocity(velocity);		
+		Ball ball = new Ball(START_POS, RADIUS);
+		ball.setVelocity(velocity);
 		return ball;
 	}
 
