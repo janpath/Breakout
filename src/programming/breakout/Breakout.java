@@ -61,7 +61,6 @@ public class Breakout extends GraphicsProgram {
 	}
 
 
-
 	/** returns true as long as the ball is still on the field */
 	private boolean isOngoing(Ball ball) {
 		return ball.getY() < HEIGHT;

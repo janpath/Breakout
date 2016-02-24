@@ -6,7 +6,7 @@ import acm.graphics.GObject;
 
 public class Ball extends GOval {
 
-	private double direction = -0.123456;
+	private double direction;
 	private double size;
 
 	/** Primary Constructor */
@@ -32,8 +32,7 @@ public class Ball extends GOval {
 	}
 
 	/** Returns the direction this Ball is moving */
-	public double getDirection() {
-		assert (direction != -0.123456) : "Direction has not been initialized";
+	public double getDirection() {		
 		return direction;
 	}
 
