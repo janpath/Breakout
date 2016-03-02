@@ -21,7 +21,7 @@
 package programming.breakout;
 
 import programming.breakout.engine.GameState;
-import programming.breakout.engine.DummyEngine;
+import programming.breakout.engine.Controller;
 import programming.breakout.engine.Engine;
 import programming.breakout.view.View;
 
@@ -30,6 +30,13 @@ public class Main {
 		GameState game = new GameState();
 		Engine engine = new Engine(game);
 		View view = new View(game);
+		Controller controller = new Controller(game,
+																					 engine.getPaddle(),
+																					 true,
+																					 false,
+																					 view.getContentPane());
+		view.addMouseListener(controller);
+		view.addKeyListener(controller);
 
 		Thread engineThread = new Thread(engine);
 		engineThread.start();

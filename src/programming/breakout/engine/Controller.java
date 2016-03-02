@@ -24,9 +24,18 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.Container;
+import java.awt.Robot;
+import java.awt.AWTException;
 
-public class Controller implements MouseListener, KeyListener {
+import programming.breakout.engine.Vector2D;
+
+public class Controller implements MouseListener, MouseMotionListener, KeyListener {
+	private GameState state;
 	private Entity controlledObject;
+	private boolean freeX, freeY;
+	private Container container;
 
 	/**
 	 * @param state the GameState object
@@ -37,21 +46,34 @@ public class Controller implements MouseListener, KeyListener {
 	public Controller(GameState state, Entity controlledObject,
 										boolean x, boolean y,
 										Container container) {
+		this.state = state;
 		this.controlledObject = controlledObject;
+		this.freeX = x;
+		this.freeY = y;
+		this.container = container;
 	}
 
 	@Override
 	public void mouseMoved(MouseEvent event) {
-		controlledObject.setX(controlledObject.getX() + event.getX() - container.getWidth/2);
+		double newX = controlledObject.getX() + ((freeX) ? event.getX() - container.getWidth()/2 : 0);
+		double newY = controlledObject.getY() + ((freeY) ? event.getY() - container.getWidth()/2 : 0);
+		controlledObject.setPosition(new Vector2D(newX, newY));
+
 		if(!state.getPaused()) {
-			new Robot().mouseMove((int) (container.getLocationOnScreen().getX()
-																	 + container.getWidth()/2),
-														(int) (container.getLocationOnScreen().getY()
-																	 + container.getHeight()/2));
+			try {
+				new Robot().mouseMove((int) (container.getLocationOnScreen().getX()
+																		 + container.getWidth()/2),
+															(int) (container.getLocationOnScreen().getY()
+																		 + container.getHeight()/2));
+			} catch(AWTException ex) {
+				ex.printStackTrace();
+			}
 		}
-	} catch(AWTException ex) {
-		ex.printStackTrace();
 	}
+
+	@Override
+	public void mouseDragged(MouseEvent ev) {}
+
 
 	@Override
 	public void keyTyped(KeyEvent event) {
@@ -59,4 +81,26 @@ public class Controller implements MouseListener, KeyListener {
 			state.setPaused(!state.getPaused());
 		}
 	}
+
+	@Override
+	public void keyPressed(KeyEvent ev) {}
+
+	@Override
+	public void keyReleased(KeyEvent ev) {}
+
+	@Override
+	public void mouseExited(MouseEvent ev) {}
+
+	@Override
+	public void mouseEntered(MouseEvent ev) {}
+
+	@Override
+	public void mousePressed(MouseEvent ev) {}
+
+	@Override
+	public void mouseReleased(MouseEvent ev) {}
+
+	@Override
+	public void mouseClicked(MouseEvent ev) {}
+
 }
