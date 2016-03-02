@@ -157,4 +157,18 @@ public class GameState extends Observable {
 	void setHeight(double height) {
 		this.height = height;
 	}
+
+	/**
+	 * @return the role
+	 */
+	public String getRole() {
+		return role;
+	}
+
+	/**
+	 * @param role the role to set
+	 */
+	void setRole(String role) {
+		this.role = role;
+	}
 }
