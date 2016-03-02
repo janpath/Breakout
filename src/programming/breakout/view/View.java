@@ -87,8 +87,7 @@ public class View extends GraphicsProgram implements Observer {
 	 * Update us when there is a new game state.
 	 */
 	@Override
-	public void update(Observable observable, Object arg) {
-		println("update");
+	public void update(Observable observable, Object arg) {		
 		drawEntities();
 	}
 
