@@ -20,9 +20,13 @@
 
 package programming.breakout.view;
 
+import java.awt.AWTException;
 import java.awt.Color;
+import java.awt.GraphicsConfiguration;
+import java.awt.Robot;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseEvent;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -33,9 +37,9 @@ import acm.graphics.GRect;
 import acm.program.GraphicsProgram;
 
 import programming.breakout.engine.Ball;
-import programming.breakout.engine.Rectangle;
 import programming.breakout.engine.Entity;
 import programming.breakout.engine.GameState;
+import programming.breakout.engine.Rectangle;
 
 /**
  * A simple view for the breakout program
@@ -58,6 +62,9 @@ public class View extends GraphicsProgram implements Observer {
 	 */
 	@Override
 	public void init() {
+		addMouseListeners();
+		setBackground(Color.GRAY);
+
 		//Resize things when window is resized
 		addComponentListener(new ComponentAdapter() {
 				public void componentResized(ComponentEvent e) {
@@ -96,6 +103,11 @@ public class View extends GraphicsProgram implements Observer {
 			buffer.add(entity2GObject(state.getEntityList().get(i)));
 		}
 
+		double offsetX = ( getWidth() - state.getWidth() * scale )/2;
+		double offsetY = ( getHeight() - state.getHeight() * scale )/2;
+
+		buffer.setLocation(offsetX, offsetY);
+
 		add(buffer);
 		remove(playingField);
 		playingField = buffer;
@@ -132,11 +144,6 @@ public class View extends GraphicsProgram implements Observer {
 																				 + entity.getClass());
 		}
 
-		double offsetX = ( getWidth() - state.getWidth() * scale )/2;
-		double offsetY = ( getHeight() - state.getHeight() * scale )/2;
-
-		obj.setLocation(obj.getX() + offsetX, obj.getY() + offsetY);
-
 		return obj;
 	}
 
@@ -146,12 +153,6 @@ public class View extends GraphicsProgram implements Observer {
 	 */
 	private void drawBackground() {
 		GCompound buffer = new GCompound();
-
-		//Background colour
-		GRect background = new GRect(0, 0, getWidth(), getHeight());
-		background.setColor(Color.GRAY);
-		background.setFilled(true);
-		buffer.add(background);
 
 		//Playing field
 		GRect field = new GRect((getWidth() - state.getWidth() * scale)/2,
@@ -168,5 +169,23 @@ public class View extends GraphicsProgram implements Observer {
 		add(buffer);
 		remove(background);
 		this.background = buffer;
+	}
+
+	/**
+	 * Register mouse move
+	 */
+	@Override
+	public void mouseMoved(MouseEvent ev) {
+		try {
+			// If game isn't paused, catch mouse in window
+			if(!state.getPaused()) {
+				new Robot().mouseMove((int) (getContentPane().getLocationOnScreen()
+																		 .getX() + getWidth()/2),
+															(int) (getContentPane().getLocationOnScreen()
+																		 .getY() + getHeight()/2));
+			}
+		} catch(AWTException ex) {
+			ex.printStackTrace();
+		}
 	}
 }
