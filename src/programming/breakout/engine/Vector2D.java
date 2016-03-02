@@ -57,9 +57,18 @@ public class Vector2D {
 	}
 	
 	/**
+	 * Subtract another vector from this one
+	 * @param otherVector vector to subtract
+	 * @return resulting vector from subtraction
+	 */
+	public Vector2D sub(Vector2D otherVector) {
+		return new Vector2D(getX0() - otherVector.getX0(), getX1() - otherVector.getX1());
+	}
+	
+	/**
 	 * Calculate the scalar product
 	 */
-	public double scalarProduct (Vector2D otherVector) {
+	public double dotProduct (Vector2D otherVector) {
 		return getX0() * otherVector.getX0() + getX1() * otherVector.getX1();
 	}
 }

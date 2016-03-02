@@ -225,11 +225,19 @@ public class Engine implements Runnable {
 
 		// a vector representing the point on the paddle where the ball hits
 		Vector2D paddlePoint = new Vector2D(paddle.getX() + ball.getX() + ball.getRadius(), paddle.getY());		
+		
+		// the slope of the parabola
 		double paddleParabolaSlope = getParabolaY(paddlePoint.getX0()) / (2 * paddlePoint.getX0());
+		
 		Vector2D normalizedVector = new Vector2D(-1, paddleParabolaSlope);
-		double scalarProduct = normalizedVector.scalarProduct(ball.getVelocity());
 		
+		double dotProduct = normalizedVector.dotProduct(ball.getVelocity());
 		
+		Vector2D normalizedVectorScaled = new Vector2D(-1, paddleParabolaSlope);
+		
+		Vector2D mirroredVelocity = ball.getVelocity().sub(normalizedVectorScaled).sub(normalizedVectorScaled);
+		
+		ball.setVelocity(mirroredVelocity);
 	}
 	
 	private double getParabolaY(double x) {
