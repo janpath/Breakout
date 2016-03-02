@@ -73,13 +73,13 @@ public class Engine implements Runnable {
 		this.paddle = createPaddle();
 		this.bricks = createBricks();
 		this.ball = createBall();
-
 	}
 
 	@Override
 	public void run() {
 
 		setGameState();
+		
 		while (isRunning()) {
 			long start = System.currentTimeMillis();
 			moveBallIf();			
@@ -94,6 +94,10 @@ public class Engine implements Runnable {
 			} catch (InterruptedException ex) {
 			}
 		}
+		
+		this.ball = createBall();
+		run();
+		state.setGameOver(true);
 
 	}
 
@@ -114,7 +118,9 @@ public class Engine implements Runnable {
 		// is a brick hit?
 		else if (whichBrick() != null) {
 			handleBrickCollision();
-		} else if (rectangleIsHit(paddle)) {
+		} 
+		// is the paddle hit?
+		else if (rectangleIsHit(paddle)) {
 			handlePaddleCollision();
 		}
 		// nothing is hit
@@ -227,10 +233,18 @@ public class Engine implements Runnable {
 		Vector2D mirroredVelocity = ball.getVelocity().sub(normalizedVectorScaled).sub(normalizedVectorScaled);
 		
 		ball.setVelocity(mirroredVelocity);
+		System.out.println("afga");
 	}
 	
 	private double getParabolaY(double x) {
+		x = getParabolaX(x);
 		return paddleParabolaFactor * x * x;
+	}
+	
+	private double getParabolaX(double x) {
+		double offset = paddle.getX() + paddle.getWidth();
+		offset = (x < PLAYING_FIELD_WIDTH) ? -offset : offset;
+		return offset + (paddle.getWidth() * x / PLAYING_FIELD_WIDTH) /2.0;
 	}
 	
 	private boolean rectangleIsHit(Rectangle r) {
@@ -287,8 +301,10 @@ public class Engine implements Runnable {
 	 */
 	private boolean noCollisionPossible() {
 		// no collision possible
-		if (ball.getY() < getLowestBrickY() && ball.getX() + (2 * ball.getRadius()) < PLAYING_FIELD_WIDTH
-				&& ball.getX() > 0) {
+		if (ball.getY() > getLowestBrickY() + 3 * ball.getRadius() 
+		&& ball.getY() + 3 * ball.getRadius() < PLAYING_FIELD_HEIGHT
+		&& ball.getX() + 3 * ball.getRadius() < PLAYING_FIELD_WIDTH
+				&& ball.getX() - 3 * ball.getRadius() > 0) {
 			return true;
 		} else {
 			return false;
@@ -366,6 +382,7 @@ public class Engine implements Runnable {
 	 * initializes the GameState
 	 */
 	private void setGameState() {
+		state.setGameOver(false);
 		state.setHeight(PLAYING_FIELD_HEIGHT);
 		state.setWidth(PLAYING_FIELD_WIDTH);
 		ArrayList<Entity> list = state.getEntityList();		
