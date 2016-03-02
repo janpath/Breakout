@@ -86,7 +86,6 @@ public class View extends GraphicsProgram implements Observer {
 	 */
 	@Override
 	public void update(Observable observable, Object arg) {
-		println("update");
 		drawEntities();
 	}
 
