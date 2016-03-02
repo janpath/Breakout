@@ -34,6 +34,9 @@ public class GameState extends Observable {
 
 	private double width, height;
 	
+	protected void setChanged() {
+		super.setChanged();
+	}
 		
 	/**
 	 * Get a list of all the objects on the playing field

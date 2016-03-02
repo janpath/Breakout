@@ -40,6 +40,7 @@ import programming.breakout.engine.GameState;
 /**
  * A simple view for the breakout program
  */
+@SuppressWarnings("serial")
 public class View extends GraphicsProgram implements Observer {
 	/**
 	 * The game state
@@ -80,6 +81,7 @@ public class View extends GraphicsProgram implements Observer {
 	 */
 	@Override
 	public void update(Observable observable, Object arg) {
+		println("update");
 		drawEntities();
 	}
 
@@ -90,9 +92,9 @@ public class View extends GraphicsProgram implements Observer {
 	private void drawEntities() {
 		GCompound buffer = new GCompound();
 
-		state.getEntityList().stream()
-			.map(this::entity2GObject)
-			.forEach(buffer::add);
+		for (int i = 0; i < state.getEntityList().size(); i += 1) {
+			buffer.add(entity2GObject(state.getEntityList().get(i)));
+		}
 
 		add(buffer);
 		remove(playingField);
