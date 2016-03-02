@@ -50,7 +50,7 @@ public class GameState extends Observable {
 	 * Whether the game is paused or running
 	 * @return {@code true} if the game is paused, {@false} if it is running
 	 */
-	public boolean getPaused() {
+	public boolean isPaused() {
 		return paused;
 	}
 

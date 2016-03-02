@@ -78,7 +78,7 @@ public class Controller implements MouseMotionListener, KeyListener {
 		controlledObject.setPosition(new Vector2D(newX, newY));
 
 		//Keep mouse in component if game is not paused
-		if(!state.getPaused() && Math.max(Math.abs(xMoved), Math.abs(yMoved)) > 5) {
+		if(!state.isPaused() && !state.isGameOver() && Math.max(Math.abs(xMoved), Math.abs(yMoved)) > 5) {
 			try {
 				new Robot().mouseMove((int) (component.getLocationOnScreen().getX()
 																		 + component.getWidth()/2),
