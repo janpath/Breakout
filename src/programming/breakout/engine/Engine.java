@@ -82,8 +82,7 @@ public class Engine implements Runnable {
 		setGameState();
 		while (isRunning()) {
 			long start = System.currentTimeMillis();
-			moveBallIf();
-			updateEntityList();
+			moveBallIf();			
 
 			state.setChanged();
 			state.notifyObservers();
@@ -96,17 +95,6 @@ public class Engine implements Runnable {
 			}
 		}
 
-	}
-
-	/**
-	 * this method updates the entity list from GameState about changes
-	 */
-	private void updateEntityList() {
-		ArrayList<Entity> list = state.getEntityList();
-		list.clear();
-		list.addAll(bricks);
-		list.add(ball);
-		list.add(paddle);
 	}
 
 	/**
@@ -215,6 +203,7 @@ public class Engine implements Runnable {
 			Rectangle brick = whichBrick();
 			handleRectCollision(brick);
 			bricks.remove(brick);
+			state.getEntityList().remove(brick);
 		}
 	}
 
@@ -379,6 +368,10 @@ public class Engine implements Runnable {
 	private void setGameState() {
 		state.setHeight(PLAYING_FIELD_HEIGHT);
 		state.setWidth(PLAYING_FIELD_WIDTH);
+		ArrayList<Entity> list = state.getEntityList();		
+		list.addAll(bricks);
+		list.add(ball);
+		list.add(paddle);
 	}
 
 	/**
