@@ -27,6 +27,10 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.util.Observable;
 import java.util.Observer;
+import java.awt.Cursor;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
 
 import acm.graphics.GCompound;
 import acm.graphics.GObject;
@@ -60,15 +64,19 @@ public class View extends GraphicsProgram implements Observer {
 	 */
 	@Override
 	public void init() {
-		addMouseListeners();
 		setBackground(Color.GRAY);
 
-		//Resize things when window is resized
+		// Resize things when window is resized
 		addComponentListener(new ComponentAdapter() {
 				public void componentResized(ComponentEvent e) {
 					draw();
 				}
 			});
+
+		// Make cursor transparent
+		BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+		Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorImg, new Point(0, 0), "blank cursor");
+		getContentPane().setCursor(blankCursor);
 	}
 
 	/**
@@ -85,7 +93,7 @@ public class View extends GraphicsProgram implements Observer {
 	 * Update us when there is a new game state.
 	 */
 	@Override
-	public void update(Observable observable, Object arg) {		
+	public void update(Observable observable, Object arg) {
 		drawEntities();
 	}
 

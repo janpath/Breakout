@@ -67,4 +67,11 @@ public class Rectangle extends Entity {
 		this.width = width;
 	}
 
+	/**
+	 * @return bounding rectangle
+	 */
+	@Override
+	public Rectangle getBounds() {
+		return this;
+	}
 }

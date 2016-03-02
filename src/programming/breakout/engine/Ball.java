@@ -20,6 +20,9 @@
 
 package programming.breakout.engine;
 
+import programming.breakout.engine.Rectangle;
+import programming.breakout.engine.Vector2D;
+
 /**
  * A ball
  */
@@ -43,5 +46,13 @@ public class Ball extends Entity {
 	 */
 	void setRadius(double radius) {
 		this.radius = radius;
+	}
+
+	/**
+	 * @return bounding rectangle
+	 */
+	@Override
+	public Rectangle getBounds() {
+		return new Rectangle(new Vector2D(getX() - radius, getY() - radius), 2 * radius, 2 * radius);
 	}
 }

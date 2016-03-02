@@ -98,4 +98,9 @@ public abstract class Entity {
 	public double getY() {
 		return position.getX1();
 	}
+
+	/**
+	 * @return the bounding rectangle
+	 */
+	abstract public Rectangle getBounds();
 }

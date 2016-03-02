@@ -34,9 +34,7 @@ public class Main {
 																					 engine.getPaddle(),
 																					 true,
 																					 false,
-																					 view.getContentPane());
-		view.addMouseListener(controller);
-		view.addKeyListener(controller);
+																					 view.getGCanvas());
 
 		Thread engineThread = new Thread(engine);
 		engineThread.start();
