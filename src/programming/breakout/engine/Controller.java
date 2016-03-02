@@ -54,6 +54,7 @@ public class Controller implements MouseMotionListener, KeyListener {
 		//Add listeners
 		component.addKeyListener(this);
 		component.addMouseMotionListener(this);
+
 	}
 
 	/**
@@ -68,8 +69,10 @@ public class Controller implements MouseMotionListener, KeyListener {
 		double dy = yMoved/component.getHeight()*state.getHeight();
 
 		Rectangle bounds = controlledObject.getBounds();
-		dx += Math.max(0, -( bounds.getX() + dx)) - Math.max(0, bounds.getX() + bounds.getWidth() + dx - state.getWidth());
-		dy += Math.max(0, -( bounds.getY() + dy)) - Math.max(0, bounds.getY() + bounds.getHeight() + dy - state.getHeight());
+		dx += Math.max(0, -(bounds.getX() + dx))
+			- Math.max(0, bounds.getX() + bounds.getWidth() + dx - state.getWidth());
+		dy += Math.max(0, -(bounds.getY() + dy))
+			- Math.max(0, bounds.getY() + bounds.getHeight() + dy - state.getHeight());
 
 		//Move controlledObject
 		double newX = controlledObject.getX() + ((freeX) ? dx : 0);

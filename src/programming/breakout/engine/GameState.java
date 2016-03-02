@@ -31,13 +31,12 @@ public class GameState extends Observable {
 	private ArrayList<Entity> entities = new ArrayList<Entity>();
 	private boolean paused = false, gameOver = false;
 	private int score = 0;
-
 	private double width, height;
-	
+
 	protected void setChanged() {
 		super.setChanged();
 	}
-		
+
 	/**
 	 * Get a list of all the objects on the playing field
 	 * @return List of objects on playing field
@@ -45,7 +44,7 @@ public class GameState extends Observable {
 	public ArrayList<Entity> getEntityList() {
 		return entities;
 	}
-	
+
 	/**
 	 * Whether the game is paused or running
 	 * @return {@code true} if the game is paused, {@false} if it is running
