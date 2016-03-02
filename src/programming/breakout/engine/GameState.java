@@ -29,7 +29,7 @@ import java.util.Observable;
 public class GameState extends Observable {
 
 	private ArrayList<Entity> entities = new ArrayList<Entity>();
-	private boolean paused = false;
+	private boolean paused = false, gameOver = false;
 	private int score = 0;
 
 	private double width, height;
@@ -74,6 +74,20 @@ public class GameState extends Observable {
 	 */
 	public void setScore(int score) {
 		this.score = score;
+	}
+
+	/**
+	 * @return the gameOver
+	 */
+	public boolean isGameOver() {
+		return gameOver;
+	}
+
+	/**
+	 * @param gameOver the gameOver to set
+	 */
+	void setGameOver(boolean gameOver) {
+		this.gameOver = gameOver;
 	}
 
 	/**
