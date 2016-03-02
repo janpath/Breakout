@@ -32,8 +32,8 @@ public class Engine implements Runnable {
 	/**
 	 * Playing field
 	 */
-	private static final double PLAYING_FIELD_HEIGHT = 100;
-	private static final double PLAYING_FIELD_WIDTH = 40;
+	private static final double PLAYING_FIELD_HEIGHT = 130;
+	private static final double PLAYING_FIELD_WIDTH = 80;
 
 	/**
 	 * Paddle
@@ -46,10 +46,10 @@ public class Engine implements Runnable {
 	 * Bricks
 	 */
 	private ArrayList<Rectangle> bricks;
-	private int numberOfBrickRows = 12;
-	private int numberOfBrickCols = 6;
-	private double brickPaddingX = 0;
-	private double brickPaddingY = 0;
+	private int numberOfBrickRows = 6;
+	private int numberOfBrickCols = 7;
+	private int brickWidth = 8;
+	private int brickHeight = 4;
 
 	/**
 	 * Ball
@@ -293,23 +293,25 @@ public class Engine implements Runnable {
 	 */
 	private ArrayList<Rectangle> createBricks() {
 		ArrayList<Rectangle> bricks = new ArrayList<Rectangle>();
-		double brickSpacePerCol = PLAYING_FIELD_WIDTH - (brickPaddingX * numberOfBrickCols + 1);
-		double brickWidth = brickSpacePerCol / (numberOfBrickCols);
-		double brickSpacePerRow = PLAYING_FIELD_HEIGHT * 0.33 - (brickPaddingY * numberOfBrickRows + 1);
-		double brickHeight = brickSpacePerRow / (numberOfBrickRows);
-
-		for (int i = 0; i < numberOfBrickRows; i++) {
-
-			double x = (i * brickWidth) + brickPaddingX;
-
+		double brickSpacePerCol = PLAYING_FIELD_WIDTH - (numberOfBrickCols * brickWidth);
+		double colPadding = brickSpacePerCol / (numberOfBrickCols + 1);
+		double brickSpacePerRow = PLAYING_FIELD_HEIGHT * 0.33 - (numberOfBrickRows * brickHeight);
+		double rowPadding = brickSpacePerRow / (numberOfBrickRows + 1);
+		double x = colPadding;
+		double y = rowPadding;
+		
+		for (int i = 0; i < numberOfBrickRows; i++) {	
 			for (int j = 0; j < numberOfBrickCols; j++) {
-
-				double y = (j * brickHeight) + brickPaddingY;
+				
 				Vector2D position = new Vector2D(x, y);
-				Rectangle brick = new Rectangle(position, brickHeight, brickWidth);
+				Rectangle brick = new Rectangle(position, brickWidth, brickHeight);
 				bricks.add(brick);
+				
+				x += brickWidth + colPadding;
+				
 			}
-
+			y += brickHeight + rowPadding;
+			x = colPadding;
 		}
 		return bricks;
 	}
