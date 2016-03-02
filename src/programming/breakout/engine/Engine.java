@@ -41,6 +41,7 @@ public class Engine implements Runnable {
 	private Rectangle paddle;
 	private double paddleLength = 0.2 * PLAYING_FIELD_WIDTH;
 	private double paddleHeight = 0.1 * paddleLength;
+	private double paddleParabolaFactor = 0.01;
 
 	/**
 	 * Bricks
@@ -72,21 +73,21 @@ public class Engine implements Runnable {
 		this.paddle = createPaddle();
 		this.bricks = createBricks();
 		this.ball = createBall();
-		
+
 	}
 
 	@Override
 	public void run() {
-		
-		setGameState();				
+
+		setGameState();
 		while (isRunning()) {
 			long start = System.currentTimeMillis();
 			moveBallIf();
 			updateEntityList();
-						
+
 			state.setChanged();
 			state.notifyObservers();
-			
+
 			long elapsed = start - System.currentTimeMillis();
 
 			try {
@@ -97,9 +98,8 @@ public class Engine implements Runnable {
 
 	}
 
-	
 	/**
-	 * this method updates the entity list from GameState about changes 	
+	 * this method updates the entity list from GameState about changes
 	 */
 	private void updateEntityList() {
 		ArrayList<Entity> list = state.getEntityList();
@@ -108,16 +108,17 @@ public class Engine implements Runnable {
 		list.add(ball);
 		list.add(paddle);
 	}
-	
+
 	/**
-	 * this method moves the ball while adding the velocity to the position, if no collision is possible
+	 * this method moves the ball while adding the velocity to the position, if
+	 * no collision is possible
 	 */
 	private void moveBallIf() {
-		
-		// the ball is far enough away from everything 
+
+		// the ball is far enough away from everything
 		if (noCollisionPossible()) {
 			moveBall();
-		} 
+		}
 		// is a wall hit?
 		else if (whichWall() < 4) {
 			handleWallCollision();
@@ -125,23 +126,26 @@ public class Engine implements Runnable {
 		// is a brick hit?
 		else if (whichBrick() != null) {
 			handleBrickCollision();
+		} else if (rectangleIsHit(paddle)) {
+			handlePaddleCollision();
 		}
 		// nothing is hit
 		else {
 			moveBall();
 		}
 	}
-	
+
 	/**
-	 * this method moves the ball, not asking for collisions 
+	 * this method moves the ball, not asking for collisions
 	 */
 	private void moveBall() {
 		Vector2D newPosition = ball.getPosition().add(ball.getVelocity());
 		ball.setPosition(newPosition);
 	}
-	
+
 	/**
-	 * this method handles a possible collision with a wall. If no Wall is hit, nothing happens
+	 * this method handles a possible collision with a wall. If no Wall is hit,
+	 * nothing happens
 	 */
 	private void handleWallCollision() {
 		double x = ball.getVelocity().getX0();
@@ -163,61 +167,103 @@ public class Engine implements Runnable {
 		// other
 		case 4:
 			handleBrickCollision();
+			handlePaddleCollision();
 			// no break
-		// no collision;	
+			// no collision;
 		default:
 			moveBall();
-		}		
+		}
 
 	}
-	
+
 	/**
-	 * this method handles a possible collision with a brick 
+	 * this method handles the collision with a rectangle, wich is the paddle or
+	 * a brick.
+	 * 
+	 * @param rect
+	 *            the rectangle that is hit.
+	 */
+	private void handleRectCollision(Rectangle rect) {
+
+		// a vector representing the center of the brick which is hit
+		Vector2D brickCenter = new Vector2D(rect.getX() + rect.getHeight() / 2, rect.getY() + rect.getWidth() / 2);
+		// a vector representing the center of the ball
+		Vector2D ballCenter = new Vector2D(ball.getX() + ball.getRadius(), ball.getY() + ball.getRadius());
+		// a vector which points from the ball to the brick
+		Vector2D referenceVector = ballCenter.add(brickCenter);
+
+		// get x and y values of the reference vector
+		double x = rect.getWidth() / 2 - referenceVector.getX0();
+		double y = rect.getHeight() / 2 - referenceVector.getX1();
+
+		double xVel = ball.getVelocity().getX0();
+		double yVel = ball.getVelocity().getX1();
+
+		// compare x and y to set velocity (direction)
+		if (x < y) {
+			ball.setVelocity(new Vector2D(-xVel, yVel));
+		} else {
+			ball.setVelocity(new Vector2D(xVel, -yVel));
+		}
+	}
+
+	/**
+	 * this method handles a possible collision with a brick
 	 */
 	private void handleBrickCollision() {
 		if (whichBrick() != null) {
 			Rectangle brick = whichBrick();
-
-			Vector2D brickCenter = new Vector2D(brick.getX() + brick.getHeight() / 2,
-					brick.getY() + brick.getWidth() / 2);
-			Vector2D ballCenter = new Vector2D(ball.getX() + ball.getRadius(), ball.getY() + ball.getRadius());
-			Vector2D referenceVector = ballCenter.add(brickCenter);
-
-			double x = brick.getWidth() / 2 - referenceVector.getX0();
-			double y = brick.getHeight() / 2 - referenceVector.getX1();
-
-			double xVel = ball.getVelocity().getX0();
-			double yVel = ball.getVelocity().getX1();
-
-			if (x < y) {
-				ball.setVelocity(new Vector2D(-xVel, yVel));
-			} else {
-				ball.setVelocity(new Vector2D(xVel, -yVel));
-			}
-
+			handleRectCollision(brick);
 			bricks.remove(brick);
 		}
+	}
 
+	/**
+	 * this method handles a possible collision with the paddle
+	 */
+	private void handlePaddleCollision() {
+
+		// a vector representing the point on the paddle where the ball hits
+		Vector2D paddlePoint = new Vector2D(paddle.getX() + ball.getX() + ball.getRadius(), paddle.getY());		
+		double paddleParabolaSlope = getParabolaY(paddlePoint.getX0()) / (2 * paddlePoint.getX0());
+		Vector2D normalizedVector = new Vector2D(-1, paddleParabolaSlope);
+		double scalarProduct = normalizedVector.scalarProduct(ball.getVelocity());
+		
+		
 	}
 	
+	private double getParabolaY(double x) {
+		return paddleParabolaFactor * x * x;
+	}
+	
+	private boolean rectangleIsHit(Rectangle r) {
+		if (ball.getY() + (2 * ball.getRadius()) >= r.getY() && ball.getY() <= r.getY() + r.getHeight()) {
+			if (ball.getX() + (2 * ball.getRadius()) >= r.getX() && ball.getX() <= r.getX() + r.getWidth()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
-	 * checks which brick is hit and returns it
+	 * checks which brick is hit and returns it. Returns {@code null} if no
+	 * brick is hit
 	 */
 	private Rectangle whichBrick() {
 
 		for (Rectangle r : bricks) {
 
-			if (ball.getY() + (2 * ball.getRadius()) >= r.getY() && ball.getY() <= r.getY() + r.getHeight()) {
-				if (ball.getX() + (2 * ball.getRadius()) >= r.getX() && ball.getX() <= r.getX() + r.getWidth()) {
-					return r;
-				}
+			if (rectangleIsHit(r)) {
+				return r;
 			}
 		}
+
 		return null;
 	}
-	
+
 	/**
-	 * checks which wall is hit and returns a number representing either top, left , right, or no wall hit
+	 * checks which wall is hit and returns a number representing either top,
+	 * left , right, or no wall hit
 	 */
 	private int whichWall() {
 		// right
@@ -237,9 +283,10 @@ public class Engine implements Runnable {
 			return 4;
 		}
 	}
-	
+
 	/**
-	 * checks whether the ball is far enough away from anything which it can collide with
+	 * checks whether the ball is far enough away from anything which it can
+	 * collide with
 	 */
 	private boolean noCollisionPossible() {
 		// no collision possible
@@ -250,9 +297,10 @@ public class Engine implements Runnable {
 			return false;
 		}
 	}
-	
+
 	/**
-	 *  returns the y coordinate of the lowest brick on the screen (the one with the highest y)
+	 * returns the y coordinate of the lowest brick on the screen (the one with
+	 * the highest y)
 	 */
 	private double getLowestBrickY() {
 		double minY = Double.POSITIVE_INFINITY;
@@ -261,24 +309,25 @@ public class Engine implements Runnable {
 		}
 		return minY;
 	}
-	
+
 	/**
 	 * returns the paddle
+	 * 
 	 * @return a Rectangle representing the paddle
 	 */
 	public Rectangle getPaddle() {
 		return this.paddle;
 	}
-	
+
 	/**
 	 * creates the paddle, which is a rectangle
 	 */
 	private Rectangle createPaddle() {
-		Vector2D startingPosition = new Vector2D(PLAYING_FIELD_WIDTH / 2, PLAYING_FIELD_HEIGHT - paddleHeight); 
+		Vector2D startingPosition = new Vector2D(PLAYING_FIELD_WIDTH / 2, PLAYING_FIELD_HEIGHT - paddleHeight);
 		Rectangle paddle = new Rectangle(startingPosition, paddleLength, paddleHeight);
 		return paddle;
 	}
-	
+
 	/**
 	 * creates the ball
 	 */
@@ -287,7 +336,7 @@ public class Engine implements Runnable {
 		ball.setVelocity(velocity);
 		return ball;
 	}
-	
+
 	/**
 	 * creates the bricks and stores them in an array
 	 */
@@ -299,23 +348,23 @@ public class Engine implements Runnable {
 		double rowPadding = brickSpacePerRow / (numberOfBrickRows + 1);
 		double x = colPadding;
 		double y = rowPadding;
-		
-		for (int i = 0; i < numberOfBrickRows; i++) {	
+
+		for (int i = 0; i < numberOfBrickRows; i++) {
 			for (int j = 0; j < numberOfBrickCols; j++) {
-				
+
 				Vector2D position = new Vector2D(x, y);
 				Rectangle brick = new Rectangle(position, brickWidth, brickHeight);
 				bricks.add(brick);
-				
+
 				x += brickWidth + colPadding;
-				
+
 			}
 			y += brickHeight + rowPadding;
 			x = colPadding;
 		}
 		return bricks;
 	}
-	
+
 	/**
 	 * initializes the GameState
 	 */

@@ -55,4 +55,11 @@ public class Vector2D {
 	public Vector2D add(Vector2D otherVector) {
 		return new Vector2D(getX0() + otherVector.getX0(), getX1() + otherVector.getX1());
 	}
+	
+	/**
+	 * Calculate the scalar product
+	 */
+	public double scalarProduct (Vector2D otherVector) {
+		return getX0() * otherVector.getX0() + getX1() * otherVector.getX1();
+	}
 }
