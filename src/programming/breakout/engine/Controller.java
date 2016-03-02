@@ -20,8 +20,43 @@
 
 package programming.breakout.engine;
 
+import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 public class Controller implements MouseListener, KeyListener {
+	private Entity controlledObject;
+
+	/**
+	 * @param state the GameState object
+	 * @param controlledObject the object to be controlled
+	 * @param x whether the object can be moved in the x direction
+	 * @param y whether the object can be moved in the y direction
+	 */
+	public Controller(GameState state, Entity controlledObject,
+										boolean x, boolean y,
+										Container container) {
+		this.controlledObject = controlledObject;
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent event) {
+		controlledObject.setX(controlledObject.getX() + event.getX() - container.getWidth/2);
+		if(!state.getPaused()) {
+			new Robot().mouseMove((int) (container.getLocationOnScreen().getX()
+																	 + container.getWidth()/2),
+														(int) (container.getLocationOnScreen().getY()
+																	 + container.getHeight()/2));
+		}
+	} catch(AWTException ex) {
+		ex.printStackTrace();
+	}
+
+	@Override
+	public void keyTyped(KeyEvent event) {
+		if(event.getKeyCode() == KeyEvent.VK_SPACE) {
+			state.setPaused(!state.getPaused());
+		}
+	}
 }
