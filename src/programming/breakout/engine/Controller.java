@@ -69,12 +69,15 @@ public class Controller implements MouseMotionListener, KeyListener {
 	 */
 	@Override
 	public void mouseMoved(MouseEvent event) {
+		// How much the mouse moved on screen
 		double xMoved = event.getX() - component.getWidth()/2;
 		double yMoved = event.getY() - component.getHeight()/2;
 
+		// Translate that to the playing field
 		double dx = xMoved/component.getWidth()*state.getWidth();
 		double dy = yMoved/component.getHeight()*state.getHeight();
 
+		// Make sure we don't move the object out of the playing field
 		Rectangle bounds = controlledObject.getBounds();
 		dx += Math.max(0, -(bounds.getX() + dx))
 			- Math.max(0, bounds.getX() + bounds.getWidth() + dx - state.getWidth());
