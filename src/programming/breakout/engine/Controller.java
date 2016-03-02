@@ -23,19 +23,18 @@ package programming.breakout.engine;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.Container;
+import java.awt.Component;
 import java.awt.Robot;
 import java.awt.AWTException;
 
 import programming.breakout.engine.Vector2D;
 
-public class Controller implements MouseListener, MouseMotionListener, KeyListener {
+public class Controller implements MouseMotionListener, KeyListener {
 	private GameState state;
 	private Entity controlledObject;
 	private boolean freeX, freeY;
-	private Container container;
+	private Component component;
 
 	/**
 	 * @param state the GameState object
@@ -45,26 +44,46 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	 */
 	public Controller(GameState state, Entity controlledObject,
 										boolean x, boolean y,
-										Container container) {
+										Component component) {
 		this.state = state;
 		this.controlledObject = controlledObject;
 		this.freeX = x;
 		this.freeY = y;
-		this.container = container;
+		this.component = component;
+
+		//Add listeners
+		component.addKeyListener(this);
+		component.addMouseMotionListener(this);
 	}
 
+	/**
+	 * Move controlled object and keep mouse in window
+	 */
 	@Override
 	public void mouseMoved(MouseEvent event) {
-		double newX = controlledObject.getX() + ((freeX) ? event.getX() - container.getWidth()/2 : 0);
-		double newY = controlledObject.getY() + ((freeY) ? event.getY() - container.getWidth()/2 : 0);
+		double xMoved = event.getX() - component.getWidth()/2;
+		double yMoved = event.getY() - component.getHeight()/2;
+
+		double dx = xMoved/component.getWidth()*state.getWidth();
+		double dy = yMoved/component.getHeight()*state.getHeight();
+
+		Rectangle bounds = controlledObject.getBounds();
+		dx += Math.max(0, -( bounds.getX() + dx)) - Math.max(0, bounds.getX() + bounds.getWidth() + dx - state.getWidth());
+		dy += Math.max(0, -( bounds.getY() + dy)) - Math.max(0, bounds.getY() + bounds.getHeight() + dy - state.getHeight());
+
+		//Move controlledObject
+		double newX = controlledObject.getX() + ((freeX) ? dx : 0);
+		double newY = controlledObject.getY() + ((freeY) ? dy : 0);
+
 		controlledObject.setPosition(new Vector2D(newX, newY));
 
-		if(!state.getPaused()) {
+		//Keep mouse in component if game is not paused
+		if(!state.getPaused() && Math.max(Math.abs(xMoved), Math.abs(yMoved)) > 5) {
 			try {
-				new Robot().mouseMove((int) (container.getLocationOnScreen().getX()
-																		 + container.getWidth()/2),
-															(int) (container.getLocationOnScreen().getY()
-																		 + container.getHeight()/2));
+				new Robot().mouseMove((int) (component.getLocationOnScreen().getX()
+																		 + component.getWidth()/2),
+															(int) (component.getLocationOnScreen().getY()
+																		 + component.getHeight()/2));
 			} catch(AWTException ex) {
 				ex.printStackTrace();
 			}
@@ -75,6 +94,9 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	public void mouseDragged(MouseEvent ev) {}
 
 
+	/**
+	 * Pause Game
+	 */
 	@Override
 	public void keyTyped(KeyEvent event) {
 		if(event.getKeyCode() == KeyEvent.VK_SPACE) {
@@ -83,24 +105,9 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	}
 
 	@Override
+	public void keyReleased(KeyEvent ev) {
+	}
+
+	@Override
 	public void keyPressed(KeyEvent ev) {}
-
-	@Override
-	public void keyReleased(KeyEvent ev) {}
-
-	@Override
-	public void mouseExited(MouseEvent ev) {}
-
-	@Override
-	public void mouseEntered(MouseEvent ev) {}
-
-	@Override
-	public void mousePressed(MouseEvent ev) {}
-
-	@Override
-	public void mouseReleased(MouseEvent ev) {}
-
-	@Override
-	public void mouseClicked(MouseEvent ev) {}
-
 }

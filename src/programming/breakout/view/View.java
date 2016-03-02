@@ -60,7 +60,6 @@ public class View extends GraphicsProgram implements Observer {
 	 */
 	@Override
 	public void init() {
-		addMouseListeners();
 		setBackground(Color.GRAY);
 
 		//Resize things when window is resized
