@@ -103,7 +103,7 @@ public class Controller implements MouseMotionListener, KeyListener {
 	@Override
 	public void keyTyped(KeyEvent event) {
 		if(event.getKeyCode() == KeyEvent.VK_SPACE) {
-			state.setPaused(!state.getPaused());
+			state.setPaused(!state.isPaused());
 		}
 	}
 
