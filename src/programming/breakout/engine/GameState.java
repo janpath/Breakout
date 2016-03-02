@@ -22,6 +22,9 @@ package programming.breakout.engine;
 
 import java.util.ArrayList;
 import java.util.Observable;
+import java.util.HashSet;
+
+import programming.breakout.engine.Pair;
 
 /**
  * Save all the GameState relevant to the view.
@@ -32,6 +35,44 @@ public class GameState extends Observable {
 	private boolean paused = false, gameOver = false;
 	private int score = 0;
 	private double width, height;
+	private String role;
+
+	/**
+	 * Contains information about what changed since last time
+	 */
+	public static class GameDelta {
+		public final ArrayList<Entity> entitiesDestroyed;
+		public final HashSet<Entity> entitiesMoved;
+		public final ArrayList<Pair<Entity, Entity>> entitiesCollided;
+		public final int scoreDelta;
+		public final boolean pausedToggled, gameEnded;
+
+		GameDelta(ArrayList<Entity> entitiesDestroyed,
+							HashSet<Entity> entitiesMoved,
+							ArrayList<Pair<Entity, Entity>> entitiesCollided,
+							int scoreDelta,
+							boolean pausedToggled,
+							boolean gameEnded) {
+			this.entitiesDestroyed = entitiesDestroyed;
+			this.entitiesMoved = entitiesMoved;
+			this.entitiesCollided = entitiesCollided;
+			this.scoreDelta = scoreDelta;
+			this.pausedToggled = pausedToggled;
+			this.gameEnded = gameEnded;
+		}
+
+		/**
+		 * Get the union of two deltas.
+		 */
+		public GameDelta union(GameDelta other) {
+			ArrayList<Entity> entitiesDestroyed = this.entitiesDestroyed.clone().addAll(other.entitiesDestroyed);
+			HashSet<Entity> entitiesMoved = this.entitiesDestroyed.clone().addAll(other.entitiesMoved);
+			ArrayList<Entity> entitiesCollided = this.entitiesCollided.clone().addAll(other.entitiesCollided);
+			int scoreDelta = this.scoreDelta + other.scoreDelta;
+			boolean pausedToggled = this.pausedToggled ^ other.pausedToggled;
+			boolean gameEnded = this.gameEnded || other.gameEnded;
+		}
+	}
 
 	protected void setChanged() {
 		super.setChanged();
@@ -115,5 +156,19 @@ public class GameState extends Observable {
 	 */
 	void setHeight(double height) {
 		this.height = height;
+	}
+
+	/**
+	 * @return the role
+	 */
+	public String getRole() {
+		return role;
+	}
+
+	/**
+	 * @param role the role to set
+	 */
+	void setRole(String role) {
+		this.role = role;
 	}
 }

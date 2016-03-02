@@ -55,19 +55,29 @@ public class Controller implements MouseMotionListener, KeyListener {
 		component.addKeyListener(this);
 		component.addMouseMotionListener(this);
 
+		//Create Robot for mouse catching
+		try {
+			robot = new Robot();
+		} catch(AWTException ex) {
+			ex.printStackTrace();
+		}
 	}
 
+	private Robot robot;
 	/**
 	 * Move controlled object and keep mouse in window
 	 */
 	@Override
 	public void mouseMoved(MouseEvent event) {
+		// How much the mouse moved on screen
 		double xMoved = event.getX() - component.getWidth()/2;
 		double yMoved = event.getY() - component.getHeight()/2;
 
+		// Translate that to the playing field
 		double dx = xMoved/component.getWidth()*state.getWidth();
 		double dy = yMoved/component.getHeight()*state.getHeight();
 
+		// Make sure we don't move the object out of the playing field
 		Rectangle bounds = controlledObject.getBounds();
 		dx += Math.max(0, -(bounds.getX() + dx))
 			- Math.max(0, bounds.getX() + bounds.getWidth() + dx - state.getWidth());
@@ -77,19 +87,14 @@ public class Controller implements MouseMotionListener, KeyListener {
 		//Move controlledObject
 		double newX = controlledObject.getX() + ((freeX) ? dx : 0);
 		double newY = controlledObject.getY() + ((freeY) ? dy : 0);
-
 		controlledObject.setPosition(new Vector2D(newX, newY));
 
 		//Keep mouse in component if game is not paused
 		if(!state.isPaused() && !state.isGameOver() && Math.max(Math.abs(xMoved), Math.abs(yMoved)) > 5) {
-			try {
-				new Robot().mouseMove((int) (component.getLocationOnScreen().getX()
-																		 + component.getWidth()/2),
-															(int) (component.getLocationOnScreen().getY()
-																		 + component.getHeight()/2));
-			} catch(AWTException ex) {
-				ex.printStackTrace();
-			}
+			robot.mouseMove((int) (component.getLocationOnScreen().getX()
+														 + component.getWidth()/2),
+											(int) (component.getLocationOnScreen().getY()
+														 + component.getHeight()/2));
 		}
 	}
 
@@ -103,7 +108,7 @@ public class Controller implements MouseMotionListener, KeyListener {
 	@Override
 	public void keyTyped(KeyEvent event) {
 		if(event.getKeyCode() == KeyEvent.VK_SPACE) {
-			state.setPaused(!state.getPaused());
+			state.setPaused(!state.isPaused());
 		}
 	}
 
