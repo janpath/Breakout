@@ -55,8 +55,15 @@ public class Controller implements MouseMotionListener, KeyListener {
 		component.addKeyListener(this);
 		component.addMouseMotionListener(this);
 
+		//Create Robot for mouse catching
+		try {
+			robot = new Robot();
+		} catch(AWTException ex) {
+			ex.printStackTrace();
+		}
 	}
 
+	private Robot robot;
 	/**
 	 * Move controlled object and keep mouse in window
 	 */
@@ -77,19 +84,14 @@ public class Controller implements MouseMotionListener, KeyListener {
 		//Move controlledObject
 		double newX = controlledObject.getX() + ((freeX) ? dx : 0);
 		double newY = controlledObject.getY() + ((freeY) ? dy : 0);
-
 		controlledObject.setPosition(new Vector2D(newX, newY));
 
 		//Keep mouse in component if game is not paused
 		if(!state.isPaused() && !state.isGameOver() && Math.max(Math.abs(xMoved), Math.abs(yMoved)) > 5) {
-			try {
-				new Robot().mouseMove((int) (component.getLocationOnScreen().getX()
-																		 + component.getWidth()/2),
-															(int) (component.getLocationOnScreen().getY()
-																		 + component.getHeight()/2));
-			} catch(AWTException ex) {
-				ex.printStackTrace();
-			}
+			robot.mouseMove((int) (component.getLocationOnScreen().getX()
+														 + component.getWidth()/2),
+											(int) (component.getLocationOnScreen().getY()
+														 + component.getHeight()/2));
 		}
 	}
 
