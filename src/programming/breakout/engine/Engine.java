@@ -38,7 +38,7 @@ public class Engine implements Runnable {
 	/**
 	 * Paddle
 	 */
-	private Rectangle paddle = createPaddle();
+	private Rectangle paddle;
 	private double paddleLength = 0.2 * PLAYING_FIELD_WIDTH;
 	private double paddleHeight = 0.1 * paddleLength;
 
@@ -58,7 +58,7 @@ public class Engine implements Runnable {
 	private static final double RADIUS = 2;
 	/* Velocity in units per frame */
 	private Vector2D velocity = new Vector2D(0.0, -2.0);
-	private Ball ball = createBall();
+	private Ball ball;
 
 	/**
 	 * How much to wait between each frame
@@ -69,22 +69,21 @@ public class Engine implements Runnable {
 
 	public Engine(GameState state) {
 		this.state = state;
+		this.paddle = createPaddle();
+		this.bricks = createBricks();
+		this.ball = createBall();
+		
 	}
 
 	@Override
 	public void run() {
-		setGameState();
-		createBall();
-		createPaddle();
-		this.bricks = createBricks();
 		
+		setGameState();				
 		while (isRunning()) {
 			long start = System.currentTimeMillis();
 			moveBallIf();
 			updateEntityList();
-			
-			System.out.println("tick");
-			
+						
 			state.setChanged();
 			state.notifyObservers();
 			
@@ -261,6 +260,14 @@ public class Engine implements Runnable {
 			minY = (r.getY() < minY) ? r.getY() : minY;
 		}
 		return minY;
+	}
+	
+	/**
+	 * returns the paddle
+	 * @return a Rectangle representing the paddle
+	 */
+	public Rectangle getPaddle() {
+		return this.paddle;
 	}
 	
 	/**
