@@ -20,10 +20,8 @@
 
 package programming.breakout.view;
 
-import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.GraphicsConfiguration;
-import java.awt.Robot;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
@@ -168,23 +166,5 @@ public class View extends GraphicsProgram implements Observer {
 		add(buffer);
 		remove(background);
 		this.background = buffer;
-	}
-
-	/**
-	 * Register mouse move
-	 */
-	@Override
-	public void mouseMoved(MouseEvent ev) {
-		try {
-			// If game isn't paused, catch mouse in window
-			if(!state.getPaused()) {
-				new Robot().mouseMove((int) (getContentPane().getLocationOnScreen()
-																		 .getX() + getWidth()/2),
-															(int) (getContentPane().getLocationOnScreen()
-																		 .getY() + getHeight()/2));
-			}
-		} catch(AWTException ex) {
-			ex.printStackTrace();
-		}
 	}
 }
