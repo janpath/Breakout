@@ -58,7 +58,7 @@ public class Engine implements Runnable {
 	private static final Vector2D START_POS = new Vector2D(PLAYING_FIELD_WIDTH / 2, PLAYING_FIELD_HEIGHT / 2);
 	private static final double RADIUS = 2;
 	/* Velocity in units per frame */
-	private Vector2D velocity = new Vector2D(0.0, -2.0);
+	private Vector2D velocity = new Vector2D(1.0, 0.0);
 	private Ball ball;
 
 	/**
@@ -171,7 +171,7 @@ public class Engine implements Runnable {
 	}
 
 	/**
-	 * this method handles the collision with a rectangle, wich is the paddle or
+	 * this method handles the collision with a rectangle, which is the paddle or
 	 * a brick.
 	 * 
 	 * @param rect
