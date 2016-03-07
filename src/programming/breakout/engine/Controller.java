@@ -108,8 +108,8 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 
 		assert isInField(): "Controlled object moved out of playing field.";
 
-		//Keep mouse in component
-		if(Math.max(Math.abs(xMoved), Math.abs(yMoved)) > 5) {
+		//Keep mouse in component. Don't do this every event in order to ignore the align.
+		if(Math.max(Math.abs(xMoved), Math.abs(yMoved)) > 0) {
 			alignMouse();
 		}
 	}
