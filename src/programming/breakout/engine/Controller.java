@@ -108,8 +108,8 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 
 		assert isInField(): "Controlled object moved out of playing field.";
 
-		//Keep mouse in component if game is not paused
-		if(!state.isGameOver() && Math.max(Math.abs(xMoved), Math.abs(yMoved)) > 5) {
+		//Keep mouse in component
+		if(Math.max(Math.abs(xMoved), Math.abs(yMoved)) > 5) {
 			alignMouse();
 		}
 	}
@@ -123,6 +123,7 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	@Override
 	public void mouseEntered(MouseEvent ev) {
 		component.requestFocusInWindow();
+		alignMouse();
 	}
 
 	@Override
@@ -152,6 +153,10 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	 * Align mouse so that it doesn't move out of the window
 	 */
 	private void alignMouse() {
+		if(state.isPaused() || state.isGameOver()) {
+			return;
+		}
+
 		robot.mouseMove((int) (component.getLocationOnScreen().getX()
 													 + component.getWidth()/2),
 										(int) (component.getLocationOnScreen().getY()
@@ -162,7 +167,7 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	 * Make cursor transparent if game is not paused, revert to default cursor if game is paused.
 	 */
 	private void setCursor() {
-		component.setCursor(state.isPaused() ? Cursor.getDefaultCursor() : blankCursor);
+		component.setCursor(state.isPaused() || state.isGameOver() ? Cursor.getDefaultCursor() : blankCursor);
 	}
 
 	/**
@@ -173,6 +178,7 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 		if(event.getKeyChar() == ' ') {
 			state.setPaused(!state.isPaused());
 			setCursor();
+			alignMouse();
 		}
 	}
 
