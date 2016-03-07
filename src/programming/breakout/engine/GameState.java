@@ -65,12 +65,28 @@ public class GameState extends Observable {
 		 * Get the union of two deltas.
 		 */
 		public GameDelta union(GameDelta other) {
-			ArrayList<Entity> entitiesDestroyed = this.entitiesDestroyed.clone().addAll(other.entitiesDestroyed);
-			HashSet<Entity> entitiesMoved = this.entitiesDestroyed.clone().addAll(other.entitiesMoved);
-			ArrayList<Entity> entitiesCollided = this.entitiesCollided.clone().addAll(other.entitiesCollided);
+			ArrayList<Entity> entitiesDestroyed = new ArrayList<Entity>();
+			entitiesDestroyed.addAll(this.entitiesDestroyed);
+			entitiesDestroyed.addAll(other.entitiesDestroyed);
+
+			HashSet<Entity> entitiesMoved = new HashSet<Entity>();
+			entitiesMoved.addAll(this.entitiesMoved);
+			entitiesMoved.addAll(other.entitiesMoved);
+
+			ArrayList<Pair<Entity, Entity>> entitiesCollided = new ArrayList<Pair<Entity, Entity>>();
+			entitiesCollided.addAll(this.entitiesCollided);
+			entitiesCollided.addAll(other.entitiesCollided);
+
 			int scoreDelta = this.scoreDelta + other.scoreDelta;
 			boolean pausedToggled = this.pausedToggled ^ other.pausedToggled;
 			boolean gameEnded = this.gameEnded || other.gameEnded;
+
+			return new GameDelta(entitiesDestroyed,
+													 entitiesMoved,
+													 entitiesCollided,
+													 scoreDelta,
+													 pausedToggled,
+													 gameEnded);
 		}
 	}
 
