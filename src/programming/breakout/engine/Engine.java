@@ -118,7 +118,7 @@ public class Engine implements Runnable {
 		// is a brick hit?
 		else if (whichBrick() != null) {
 			handleBrickCollision();
-		} 
+		}
 		// is the paddle hit?
 		else if (rectangleIsHit(paddle)) {
 			handlePaddleCollision();
@@ -173,7 +173,7 @@ public class Engine implements Runnable {
 	/**
 	 * this method handles the collision with a rectangle, which is the paddle or
 	 * a brick.
-	 * 
+	 *
 	 * @param rect
 	 *            the rectangle that is hit.
 	 */
@@ -301,7 +301,7 @@ public class Engine implements Runnable {
 	 */
 	private boolean noCollisionPossible() {
 		// no collision possible
-		if (ball.getY() > getLowestBrickY() + 3 * ball.getRadius() 
+		if (ball.getY() > getLowestBrickY() + 3 * ball.getRadius()
 		&& ball.getY() + 3 * ball.getRadius() < PLAYING_FIELD_HEIGHT
 		&& ball.getX() + 3 * ball.getRadius() < PLAYING_FIELD_WIDTH
 				&& ball.getX() - 3 * ball.getRadius() > 0) {
@@ -325,7 +325,7 @@ public class Engine implements Runnable {
 
 	/**
 	 * returns the paddle
-	 * 
+	 *
 	 * @return a Rectangle representing the paddle
 	 */
 	public Rectangle getPaddle() {
