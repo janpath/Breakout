@@ -28,6 +28,10 @@ import java.awt.event.MouseListener;
 import java.awt.Component;
 import java.awt.Robot;
 import java.awt.AWTException;
+import java.awt.image.BufferedImage;
+import java.awt.Cursor;
+import java.awt.Toolkit;
+import java.awt.Point;
 
 import programming.breakout.engine.Vector2D;
 
@@ -37,6 +41,9 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	private boolean freeX, freeY;
 	private Component component;
 	private Robot robot;
+	private Cursor blankCursor = Toolkit.getDefaultToolkit()
+		.createCustomCursor(new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB),
+												new Point(0, 0), "blank cursor");
 
 	/**
 	 * @param state the GameState object
@@ -64,6 +71,9 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 		} catch(AWTException ex) {
 			ex.printStackTrace();
 		}
+
+		// Make cursor transparent
+		setCursor();
 	}
 
 	/**
@@ -149,12 +159,20 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	}
 
 	/**
+	 * Make cursor transparent if game is not paused, revert to default cursor if game is paused.
+	 */
+	private void setCursor() {
+		component.setCursor(state.isPaused() ? Cursor.getDefaultCursor() : blankCursor);
+	}
+
+	/**
 	 * Pause Game
 	 */
 	@Override
 	public void keyTyped(KeyEvent event) {
 		if(event.getKeyChar() == ' ') {
 			state.setPaused(!state.isPaused());
+			setCursor();
 		}
 	}
 
