@@ -138,6 +138,24 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	@Override
 	public void mouseReleased(MouseEvent ev) {}
 
+	@Override
+	public void keyTyped(KeyEvent event) {
+		// (Un)pause game with space
+		if(event.getKeyChar() == ' ') {
+			state.setPaused(!state.isPaused());
+			setCursor();
+			alignMouse();
+		}
+	}
+
+	@Override
+	public void keyReleased(KeyEvent ev) {
+	}
+
+	@Override
+	public void keyPressed(KeyEvent event) {
+	}
+
 	/**
 	 * Test if the controlled object is still inside the playing field
 	 */
@@ -168,25 +186,5 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	 */
 	private void setCursor() {
 		component.setCursor(state.isPaused() || state.isGameOver() ? Cursor.getDefaultCursor() : blankCursor);
-	}
-
-	/**
-	 * Pause Game
-	 */
-	@Override
-	public void keyTyped(KeyEvent event) {
-		if(event.getKeyChar() == ' ') {
-			state.setPaused(!state.isPaused());
-			setCursor();
-			alignMouse();
-		}
-	}
-
-	@Override
-	public void keyReleased(KeyEvent ev) {
-	}
-
-	@Override
-	public void keyPressed(KeyEvent event) {
 	}
 }
