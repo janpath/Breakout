@@ -43,7 +43,7 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	private Robot robot;
 	private Cursor blankCursor = Toolkit.getDefaultToolkit()
 		.createCustomCursor(new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB),
-												new Point(0, 0), "blank cursor");
+		                    new Point(0, 0), "blank cursor");
 
 	/**
 	 * @param state the GameState object
@@ -52,8 +52,8 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	 * @param y whether the object can be moved in the y direction
 	 */
 	public Controller(GameState state, Entity controlledObject,
-										boolean x, boolean y,
-										Component component) {
+	                  boolean x, boolean y,
+	                  Component component) {
 		this.state = state;
 		this.controlledObject = controlledObject;
 		this.freeX = x;
@@ -176,9 +176,9 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 		}
 
 		robot.mouseMove((int) (component.getLocationOnScreen().getX()
-													 + component.getWidth()/2),
-										(int) (component.getLocationOnScreen().getY()
-													 + component.getHeight()/2));
+		                       + component.getWidth()/2),
+		                (int) (component.getLocationOnScreen().getY()
+		                       + component.getHeight()/2));
 	}
 
 	/**

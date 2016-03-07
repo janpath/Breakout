@@ -119,9 +119,9 @@ public class View extends GraphicsProgram implements Observer {
 			//Draw a ball
 			Ball ball = (Ball) entity;
 			GOval gball = new GOval(ball.getX() * scale,
-															ball.getY() * scale,
-															ball.getRadius() * scale,
-															ball.getRadius() * scale);
+			                        ball.getY() * scale,
+			                        ball.getRadius() * scale,
+			                        ball.getRadius() * scale);
 			gball.setFilled(true);
 			obj = gball;
 
@@ -129,15 +129,15 @@ public class View extends GraphicsProgram implements Observer {
 			//Draw a rectangle
 			Rectangle rect = (Rectangle) entity;
 			GRect grect = new GRect(rect.getX() * scale,
-															rect.getY() * scale,
-															rect.getWidth() * scale,
-															rect.getHeight() * scale);
+			                        rect.getY() * scale,
+			                        rect.getWidth() * scale,
+			                        rect.getHeight() * scale);
 			grect.setFilled(true);
 			obj = grect;
 
 		} else {
 			throw new IllegalArgumentException("I don't know how to display a "
-																				 + entity.getClass());
+			                                   + entity.getClass());
 		}
 
 		return obj;
@@ -152,9 +152,9 @@ public class View extends GraphicsProgram implements Observer {
 
 		//Playing field
 		GRect field = new GRect((getWidth() - state.getWidth() * scale)/2,
-														(getHeight() - state.getHeight() * scale)/2,
-														state.getWidth() * scale,
-														state.getHeight() * scale);
+		                        (getHeight() - state.getHeight() * scale)/2,
+		                        state.getWidth() * scale,
+		                        state.getHeight() * scale);
 		field.setColor(Color.WHITE);
 		field.setFilled(true);
 		buffer.add(field);

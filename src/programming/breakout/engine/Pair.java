@@ -40,7 +40,7 @@ public class Pair<S, T> {
 		this.right = right;
 	}
 
-  /**
+	/**
 	 * Create pair inferring type
 	 */
 	public static <S, T> Pair<S,T> of(S left, T right) {

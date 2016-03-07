@@ -48,11 +48,11 @@ public class GameState extends Observable {
 		public final boolean pausedToggled, gameEnded;
 
 		GameDelta(ArrayList<Entity> entitiesDestroyed,
-							HashSet<Entity> entitiesMoved,
-							ArrayList<Pair<Entity, Entity>> entitiesCollided,
-							int scoreDelta,
-							boolean pausedToggled,
-							boolean gameEnded) {
+		          HashSet<Entity> entitiesMoved,
+		          ArrayList<Pair<Entity, Entity>> entitiesCollided,
+		          int scoreDelta,
+		          boolean pausedToggled,
+		          boolean gameEnded) {
 			this.entitiesDestroyed = entitiesDestroyed;
 			this.entitiesMoved = entitiesMoved;
 			this.entitiesCollided = entitiesCollided;
@@ -82,11 +82,11 @@ public class GameState extends Observable {
 			boolean gameEnded = this.gameEnded || other.gameEnded;
 
 			return new GameDelta(entitiesDestroyed,
-													 entitiesMoved,
-													 entitiesCollided,
-													 scoreDelta,
-													 pausedToggled,
-													 gameEnded);
+			                     entitiesMoved,
+			                     entitiesCollided,
+			                     scoreDelta,
+			                     pausedToggled,
+			                     gameEnded);
 		}
 	}
 
