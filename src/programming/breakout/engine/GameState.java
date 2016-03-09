@@ -43,20 +43,20 @@ public class GameState extends Observable {
 	public static class GameDelta {
 		public ArrayList<Entity> entitiesDestroyed;
 		public ArrayList<Entity> entitiesAdded;
-		public HashSet<Entity> entitiesChanged;
+		public HashSet<Entity> entitiesMoved;
 		public ArrayList<Pair<Entity, Entity>> entitiesCollided;
 		public int scoreDelta;
 		public boolean pausedToggled, gameOverToggled;
 
 		GameDelta(ArrayList<Entity> entitiesDestroyed,
 		          ArrayList<Entity> entitiesAdded,
-		          HashSet<Entity> entitiesChanged,
+		          HashSet<Entity> entitiesMoved,
 		          ArrayList<Pair<Entity, Entity>> entitiesCollided,
 		          int scoreDelta,
 		          boolean pausedToggled,
 		          boolean gameOverToggled) {
 			this.entitiesDestroyed = entitiesDestroyed;
-			this.entitiesChanged = entitiesChanged;
+			this.entitiesMoved = entitiesMoved;
 			this.entitiesCollided = entitiesCollided;
 			this.scoreDelta = scoreDelta;
 			this.pausedToggled = pausedToggled;
@@ -66,7 +66,7 @@ public class GameState extends Observable {
 		GameDelta() {
 			entitiesDestroyed = new ArrayList<Entity>();
 			entitiesAdded = new ArrayList<Entity>();
-			entitiesChanged = new HashSet<Entity>();
+			entitiesMoved = new HashSet<Entity>();
 			entitiesCollided = new ArrayList<Pair<Entity, Entity>>();
 		}
 
@@ -82,9 +82,9 @@ public class GameState extends Observable {
 			entitiesAdded.addAll(this.entitiesAdded);
 			entitiesAdded.addAll(other.entitiesAdded);
 
-			HashSet<Entity> entitiesChanged = new HashSet<Entity>();
-			entitiesChanged.addAll(this.entitiesChanged);
-			entitiesChanged.addAll(other.entitiesChanged);
+			HashSet<Entity> entitiesMoved = new HashSet<Entity>();
+			entitiesMoved.addAll(this.entitiesMoved);
+			entitiesMoved.addAll(other.entitiesMoved);
 
 			ArrayList<Pair<Entity, Entity>> entitiesCollided = new ArrayList<Pair<Entity, Entity>>();
 			entitiesCollided.addAll(this.entitiesCollided);
@@ -96,7 +96,7 @@ public class GameState extends Observable {
 
 			return new GameDelta(entitiesDestroyed,
 			                     entitiesAdded,
-			                     entitiesChanged,
+			                     entitiesMoved,
 			                     entitiesCollided,
 			                     scoreDelta,
 			                     pausedToggled,
@@ -108,8 +108,8 @@ public class GameState extends Observable {
 		super.setChanged();
 	}
 
-	protected void addChanged(Entity e) {
-		delta.entitiesChanged.add(e);
+	protected void addMoved(Entity e) {
+		delta.entitiesMoved.add(e);
 		setChanged();
 	}
 
