@@ -236,28 +236,23 @@ public class Engine implements Runnable {
 		Vector2D rectCenter = r.getPosition().add(new Vector2D(r.getWidth() / 2.0, r.getHeight() / 2.0));
 		Vector2D centerDistance = rectCenter.add(ballCenter);
 		double alpha = ballCenter.dotProduct(rectCenter) / ballCenter.getLength() * rectCenter.getLength();
-		
-		// get x and y values of the reference vector
-		double x = r.getWidth() / 2 - centerDistance.getX0();
-		double y = r.getHeight() / 2 - centerDistance.getX1();
-		
-		// ball is to the right
-		if (true) {
-		double oppositeSite = rectCenter.add(new Vector2D(r.getHeight() / 2.0, 0.0)).getLength();
-		} 
-		// ball is to the left
-		else if (false) {
-			
+
+		double innerRectDist;
+		// ball is to the right or left
+		if (ball.getX() < r.getX() || ball.getX() + 2 * ball.getRadius() > r.getX() + r.getWidth()) {
+			innerRectDist = r.getWidth() / 2.0 / Math.asin(alpha);
 		}
-		// ball is on top
-		else if (false) {
-			
+		// ball is to the top or bottom
+		else if (ball.getY() + 2 * ball.getRadius() > r.getY() + r.getHeight() || ball.getY() < r.getY()) {
+			innerRectDist = r.getHeight() / 2.0 / Math.asin(alpha);
+		} else {
+			innerRectDist = 0;
 		}
-		// ball is on the bottom
-		else if (false) {
+
+		if (centerDistance.getLength() - innerRectDist < ball.getRadius()) {
+			return true;
 		}
-		else
-		{}	
+		return false;
 	}
 
 	/**
