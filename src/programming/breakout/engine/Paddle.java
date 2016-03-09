@@ -4,12 +4,20 @@ public class Paddle extends Rectangle {
 	
 	private Ball paddleArc; 
 	
-	private void setPaddleArc(Ball paddleArc) {
+	public Paddle(Vector2D position, double width, double height, Ball arc) {
+		super(position, width, height);
+		this.paddleArc = arc;
+	}
+	
+	public void setPaddleArc(Ball paddleArc) {
 		this.paddleArc = paddleArc;
 	}
 	
-	private Ball getPaddleArc() {
+	public Ball getPaddleArc() {
 		return paddleArc;
 	}
 	
+	public double getRadius() {
+		return paddleArc.getRadius();
+	}
 }
