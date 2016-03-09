@@ -4,23 +4,17 @@ public class Paddle extends Rectangle {
 
 	private Ball paddleArc;
 
-	public Paddle(Vector2D position, double width, double height, Ball arc) {
+	public Paddle(Vector2D position, double width, double height) {
 		super(position, width, height);
-		this.paddleArc = arc;
-	}
-
-	public void setPaddleArc(Ball paddleArc) {
-		this.paddleArc = paddleArc;
-	}
-
-	public Ball getPaddleArc() {
-		return paddleArc;
 	}
 
 	public double getRadius() {
-		return paddleArc.getRadius();
+		return ((getHeight() * getHeight()) + (getWidth() * getWidth() / 4)) / (2 * getHeight());
 	}
 
+	public Vector2D getArcCenter() {
+		return getPosition().add(new Vector2D(getWidth()/2, getRadius()));
+	}
 
 	public double getAngle() {
 		return Math.asin((getWidth()/2d) / getRadius()) * 2d;
