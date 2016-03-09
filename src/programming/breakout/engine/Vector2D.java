@@ -39,8 +39,11 @@ public class Vector2D {
 
 	/**
 	 * Create new Vector
-	 * @param x0 first compounent
-	 * @param x1 second compounent
+	 * 
+	 * @param x0
+	 *            first compounent
+	 * @param x1
+	 *            second compounent
 	 */
 	public Vector2D(double x0, double x1) {
 		this.x0 = x0;
@@ -49,30 +52,38 @@ public class Vector2D {
 
 	/**
 	 * Add two vectors
-	 * @param otherVector vector to add
+	 * 
+	 * @param otherVector
+	 *            vector to add
 	 * @return resulting vector from addition
 	 */
 	public Vector2D add(Vector2D otherVector) {
 		return new Vector2D(getX0() + otherVector.getX0(), getX1() + otherVector.getX1());
 	}
-	
+
 	/**
 	 * Subtract another vector from this one
-	 * @param otherVector vector to subtract
+	 * 
+	 * @param otherVector
+	 *            vector to subtract
 	 * @return resulting vector from subtraction
 	 */
 	public Vector2D sub(Vector2D otherVector) {
 		return new Vector2D(getX0() - otherVector.getX0(), getX1() - otherVector.getX1());
 	}
-	
+
 	/**
 	 * Calculate the scalar product
 	 */
-	public double dotProduct (Vector2D otherVector) {
+	public double dotProduct(Vector2D otherVector) {
 		return getX0() * otherVector.getX0() + getX1() * otherVector.getX1();
 	}
-	
+
 	public double getLength() {
 		return Math.sqrt(getX0() * getX0() + getX1() * getX1());
+	}
+
+	public Vector2D divide(Vector2D otherVector) {
+		return new Vector2D(getX0() / otherVector.getX0(), getX1() / otherVector.getX1());
 	}
 }
