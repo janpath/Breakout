@@ -65,7 +65,7 @@ public class GameState extends Observable {
 
 		GameDelta() {
 			entitiesDestroyed = new ArrayList<Entity>();
-			entitiesMoved = new ArrayList<Entity>();
+			entitiesAdded = new ArrayList<Entity>();
 			entitiesChanged = new HashSet<Entity>();
 			entitiesCollided = new ArrayList<Pair<Entity, Entity>>();
 		}
@@ -114,7 +114,7 @@ public class GameState extends Observable {
 	}
 
 	protected void addCollided(Entity e1, Entity e2) {
-		delta.entitiesChanged.add(new Pair<Entity, Entity>(e1, e2));
+		delta.entitiesCollided.add(new Pair<Entity, Entity>(e1, e2));
 		setChanged();
 	}
 

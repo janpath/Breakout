@@ -27,7 +27,23 @@ public abstract class Entity {
 	private Vector2D velocity = new Vector2D(0, 0);
 	private Vector2D position = new Vector2D(0, 0);
 
+	private String role;
+
 	private boolean visible;
+
+	/**
+	 * @return a string classifying the role of the ball
+	 */
+	public String getRole() {
+		return role;
+	}
+
+	/**
+	 * Set the role of the entity
+	 */
+	void setRole(String role) {
+		this.role = role;
+	}
 
 	/**
 	 * @return the acceleration

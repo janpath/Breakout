@@ -104,7 +104,13 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 		//Move controlledObject
 		double newX = controlledObject.getX() + ((freeX) ? dx : 0);
 		double newY = controlledObject.getY() + ((freeY) ? dy : 0);
-		controlledObject.setPosition(new Vector2D(newX, newY));
+
+		Vector2D newPosition = new Vector2D(newX, newY);
+
+		if (!controlledObject.getPosition().equals(newPosition)){
+			controlledObject.setPosition(newPosition);
+			state.addChanged(controlledObject);
+		}
 
 		assert isInField(): "Controlled object moved out of playing field.";
 

@@ -76,25 +76,26 @@ public class Engine implements Runnable {
 	@Override
 	public void run() {
 
-		setGameState();
-		while (isRunning()) {
-			long start = System.currentTimeMillis();
-			moveBallIf();
+		while (true) {
+			setGameState();
+			this.ball = createBall();
 
-			state.endTick();
+			while (!state.isGameOver()) {
+				long start = System.currentTimeMillis();
 
-			long elapsed = start - System.currentTimeMillis();
+				if (!state.isPaused()) {
+					moveBallIf();
+					state.endTick();
+				}
 
-			try {
-				Thread.sleep(REFRESH_RATE - elapsed);
-			} catch (InterruptedException ex) {
+				long elapsed = start - System.currentTimeMillis();
+
+				try {
+					Thread.sleep(REFRESH_RATE - elapsed);
+				} catch (InterruptedException ex) {
+				}
 			}
 		}
-
-		this.ball = createBall();
-		run();
-		state.setGameOver(true);
-
 	}
 
 	/**
@@ -230,7 +231,7 @@ public class Engine implements Runnable {
 
 		Vector2D mirroredVelocity = ball.getVelocity().sub(normalizedVectorScaled).sub(normalizedVectorScaled);
 
-		state.addCollideds(ball, paddle);
+		state.addCollided(ball, paddle);
 
 		ball.setVelocity(mirroredVelocity);
 		System.out.println("afga");

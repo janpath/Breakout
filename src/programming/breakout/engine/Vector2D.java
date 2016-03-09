@@ -71,4 +71,10 @@ public class Vector2D {
 	public double dotProduct (Vector2D otherVector) {
 		return getX0() * otherVector.getX0() + getX1() * otherVector.getX1();
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		return o instanceof Vector2D &&
+			((Vector2D) o).getX0() == x0 && ((Vector2D) o).getX1() == x1;
+	}
 }
