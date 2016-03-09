@@ -57,7 +57,7 @@ public class Engine implements Runnable {
 	private static final Vector2D START_POS = new Vector2D(PLAYING_FIELD_WIDTH / 2, PLAYING_FIELD_HEIGHT / 2);
 	private static final double RADIUS = 2;
 	/* Velocity in units per frame */
-	private Vector2D velocity = new Vector2D(1.0, 0.0);
+	private Vector2D velocity = new Vector2D(0.0, -1.0);
 	private Ball ball;
 
 	/**
@@ -114,7 +114,6 @@ public class Engine implements Runnable {
 		handleBrickCollision();
 		handlePaddleCollision();
 		handleWallCollision();
-		moveBall();
 	}
 
 	/**
@@ -122,8 +121,7 @@ public class Engine implements Runnable {
 	 */
 	private boolean noCollisionPossible() {
 		if (ball.getY() - ball.getRadius() > getLowestBrickY()
-				&& ball.getX() + (3 * ball.getRadius()) < PLAYING_FIELD_WIDTH
-				&& ball.getX() - ball.getRadius() > 0 
+				&& ball.getX() + (3 * ball.getRadius()) < PLAYING_FIELD_WIDTH && ball.getX() - ball.getRadius() > 0
 				&& ball.getY() + (3 * ball.getRadius()) < paddle.getY()) {
 			return true;
 		}
@@ -196,7 +194,7 @@ public class Engine implements Runnable {
 			Rectangle brick = whichBrick();
 			handleRectCollision(brick);
 			bricks.remove(brick);
-			state.getEntityList().remove(brick);
+			state.remove(brick);
 		}
 	}
 
@@ -205,12 +203,12 @@ public class Engine implements Runnable {
 	 */
 	private void handlePaddleCollision() {
 		Ball arc = paddle.getPaddleArc();
-		if (rectangleIsHit(paddle) && ballIsHit(arc)) {			
+		if (rectangleIsHit(paddle) && ballIsHit(arc)) {
 			Vector2D distance = ball.getCenter().add(arc.getCenter());
 			Vector2D norm = distance.divide(distance.getLength());
 			double scalar = norm.dotProduct(ball.getVelocity());
-			Vector2D dotVector = new Vector2D (scalar, scalar);
-			Vector2D mirroredVelocity = ball.getVelocity().sub(dotVector).sub(dotVector);			
+			Vector2D dotVector = new Vector2D(scalar, scalar);
+			Vector2D mirroredVelocity = ball.getVelocity().sub(dotVector).sub(dotVector);
 			ball.setVelocity(mirroredVelocity);
 		}
 
@@ -220,12 +218,11 @@ public class Engine implements Runnable {
 		// a vector representing the center of the ball
 		Vector2D ballCenter = new Vector2D(ball.getX() + ball.getRadius(), ball.getY() + ball.getRadius());
 		// a vector representing the center of the ball
-		Vector2D collisionCenter = new Vector2D(b.getX() + b.getRadius(),
-				b.getY() + b.getRadius());		
-		
+		Vector2D collisionCenter = new Vector2D(b.getX() + b.getRadius(), b.getY() + b.getRadius());
+
 		double collisionDistance = ball.getRadius() + b.getRadius();
 		Vector2D distance = ballCenter.add(collisionCenter);
-		
+
 		if (distance.getLength() < collisionDistance) {
 			return true;
 		}
@@ -233,12 +230,34 @@ public class Engine implements Runnable {
 	}
 
 	private boolean rectangleIsHit(Rectangle r) {
-		if (ball.getY() + (2 * ball.getRadius()) >= r.getY() && ball.getY() <= r.getY() + r.getHeight()) {
-			if (ball.getX() + (2 * ball.getRadius()) >= r.getX() && ball.getX() <= r.getX() + r.getWidth()) {
-				return true;
-			}
+
+		// a vector representing the center of the ball
+		Vector2D ballCenter = ball.getCenter();
+		Vector2D rectCenter = r.getPosition().add(new Vector2D(r.getWidth() / 2.0, r.getHeight() / 2.0));
+		Vector2D centerDistance = rectCenter.add(ballCenter);
+		double alpha = ballCenter.dotProduct(rectCenter) / ballCenter.getLength() * rectCenter.getLength();
+		
+		// get x and y values of the reference vector
+		double x = r.getWidth() / 2 - centerDistance.getX0();
+		double y = r.getHeight() / 2 - centerDistance.getX1();
+		
+		// ball is to the right
+		if (true) {
+		double oppositeSite = rectCenter.add(new Vector2D(r.getHeight() / 2.0, 0.0)).getLength();
+		} 
+		// ball is to the left
+		else if (false) {
+			
 		}
-		return false;
+		// ball is on top
+		else if (false) {
+			
+		}
+		// ball is on the bottom
+		else if (false) {
+		}
+		else
+		{}	
 	}
 
 	/**
@@ -246,14 +265,11 @@ public class Engine implements Runnable {
 	 * brick is hit
 	 */
 	private Rectangle whichBrick() {
-
 		for (Rectangle r : bricks) {
-
 			if (rectangleIsHit(r)) {
 				return r;
 			}
 		}
-
 		return null;
 	}
 
@@ -263,7 +279,7 @@ public class Engine implements Runnable {
 	 */
 	private int whichWall() {
 		// right
-		if (ball.getX() + (2 * ball.getRadius()) >= PLAYING_FIELD_WIDTH) {
+		if (ball.getX() + (2 * ball.getRadius()) >= state.getWidth()) {
 			return 1;
 		}
 		// left
@@ -305,7 +321,7 @@ public class Engine implements Runnable {
 	 * creates the paddle, which is a rectangle
 	 */
 	private Paddle createPaddle() {
-		Vector2D startingPosition = new Vector2D(PLAYING_FIELD_WIDTH / 2, PLAYING_FIELD_HEIGHT - paddleHeight);
+		Vector2D startingPosition = new Vector2D(state.getWidth() / 2, state.getHeight() - paddleHeight);
 		Paddle paddle = new Paddle(startingPosition, paddleLength, paddleHeight, createPaddleArc());
 		return paddle;
 	}
@@ -314,8 +330,7 @@ public class Engine implements Runnable {
 	 * creates the paddle collision arc
 	 */
 	private Ball createPaddleArc() {
-		double arcRadius = ((paddleHeight * paddleHeight) + (paddleLength * paddleLength / 4))
-				/ (2 * paddleHeight);
+		double arcRadius = ((paddleHeight * paddleHeight) + (paddleLength * paddleLength / 4)) / (2 * paddleHeight);
 		double x = (paddleLength / 2) - arcRadius;
 		double y = paddleHeight;
 		Vector2D position = new Vector2D(x, y);
@@ -336,9 +351,9 @@ public class Engine implements Runnable {
 	 */
 	private ArrayList<Rectangle> createBricks() {
 		ArrayList<Rectangle> bricks = new ArrayList<Rectangle>();
-		double brickSpacePerCol = PLAYING_FIELD_WIDTH - (numberOfBrickCols * brickWidth);
+		double brickSpacePerCol = state.getWidth() - (numberOfBrickCols * brickWidth);
 		double colPadding = brickSpacePerCol / (numberOfBrickCols + 1);
-		double brickSpacePerRow = PLAYING_FIELD_HEIGHT * 0.33 - (numberOfBrickRows * brickHeight);
+		double brickSpacePerRow = state.getHeight() * 0.33 - (numberOfBrickRows * brickHeight);
 		double rowPadding = brickSpacePerRow / (numberOfBrickRows + 1);
 		double x = colPadding;
 		double y = rowPadding;
@@ -363,7 +378,6 @@ public class Engine implements Runnable {
 	 * initializes the GameState
 	 */
 	private void setGameState() {
-		state.setGameOver(false);
 		state.setHeight(PLAYING_FIELD_HEIGHT);
 		state.setWidth(PLAYING_FIELD_WIDTH);
 		ArrayList<Entity> list = state.getEntityList();
@@ -376,7 +390,7 @@ public class Engine implements Runnable {
 	 * checks whether the game is still running
 	 */
 	private boolean isRunning() {
-		return ball.getY() < PLAYING_FIELD_HEIGHT && !isPaused;
+		return ball.getY() < state.getHeight() && !isPaused;
 	}
 
 }
