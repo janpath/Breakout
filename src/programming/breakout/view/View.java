@@ -27,6 +27,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.HashMap;
 
 import acm.graphics.GCompound;
 import acm.graphics.GObject;
@@ -38,6 +39,7 @@ import programming.breakout.engine.Ball;
 import programming.breakout.engine.Entity;
 import programming.breakout.engine.GameState;
 import programming.breakout.engine.Rectangle;
+import programming.breakout.engine.Paddle;
 
 /**
  * A simple view for the breakout program
@@ -49,6 +51,10 @@ public class View extends GraphicsProgram implements Observer {
 	 */
 	private GameState state;
 	private double scale;
+
+	private double fieldOffsetX, fieldOffsetY;
+
+	private HashMap<Entity, GObject> entities = new HashMap<Entity, GObject>();
 
 	public View(GameState state) {
 		this.state = state;
@@ -75,9 +81,9 @@ public class View extends GraphicsProgram implements Observer {
 	 */
 	private void draw() {
 		scale = Math.min(getWidth()/state.getWidth(),
-										 getHeight()/state.getHeight());
+		                 getHeight()/state.getHeight());
+		redrawAll();
 		drawBackground();
-		drawEntities();
 	}
 
 	/**
@@ -85,28 +91,61 @@ public class View extends GraphicsProgram implements Observer {
 	 */
 	@Override
 	public void update(Observable observable, Object arg) {
-		drawEntities();
+		if(arg instanceof GameState.GameDelta) {
+			GameDelta delta = (GameDelta) arg;
+
+			for(Entity entity : delta.entitiesChanged) {
+				updateEntity(entity);
+			}
+
+			for(Entity entity : delta.entitiesRemoved) {
+				removeEntity(entity);
+			}
+
+			for(Entity entity : delta. entitiesAdded) {
+				addEntity(entity);
+			}
+		}
+		else  {
+			redrawAll();
+		}
+	}
+
+	private void addEntity(Entity entity) {
+		GObject obj = entity2GObject(entity);
+		entities.add(entity, obj);
+		playingField.add(obj);
+	}
+
+	private void removeEntity(Entity entity) {
+		playingField.remove(entities.get(entity));
+		entities.remove(entity);
+	}
+
+	private void updateEntity(Entity entity) {
+		entities.get(entity).setLocation(entity.getX()*scale, entity.getY()*scale);
 	}
 
 	private GCompound playingField = new GCompound();
 	/**
 	 * Draw entities
 	 */
-	private void drawEntities() {
-		GCompound buffer = new GCompound();
+	private void redrawAll() {
+		entities.clear();
+		GCompound oldField = playingField;
+		playingField = new GCompound();
 
 		for (int i = 0; i < state.getEntityList().size(); i += 1) {
-			buffer.add(entity2GObject(state.getEntityList().get(i)));
+			addEntity(entity);
 		}
 
-		double offsetX = ( getWidth() - state.getWidth() * scale )/2;
-		double offsetY = ( getHeight() - state.getHeight() * scale )/2;
+		fieldOffsetX = ( getWidth() - state.getWidth() * scale )/2;
+		fieldOffsetY = ( getHeight() - state.getHeight() * scale )/2;
 
 		buffer.setLocation(offsetX, offsetY);
 
-		add(buffer);
-		remove(playingField);
-		playingField = buffer;
+		add(playingField);
+		remove(oldField);
 	}
 
 	/**
@@ -136,20 +175,31 @@ public class View extends GraphicsProgram implements Observer {
 			obj = grect;
 
 		} else if(entity instanceof Paddle) {
-			//Draw paddle inside a new GCanvas, so we can use clipping.
+			//Draw paddle
 			Paddle paddle = (Paddle) entity;
-			GCanvas paddleCanvas = new GCanvas() {
-					@Override
-					public void paint(Graphics g) {
-						g.clipRect(0, 0, paddleCanvas.getWidth(), paddle.getHeight());
-						super.paint(g);
-					}
-				};
-			GOval oval = new GOval(0, 0, paddle.getRadius()*2, paddle.getRadius()*2);
-			oval.setFilled(true);
-			paddleCanvas.add(oval);
+			double dy = paddle.getHeight()/2;
+			double dx = Math.cos(paddle.getAngl()) * dy;
+			double start = Math.toDegrees(Math.PI/2 - paddle.getAngle());
+			double sweep = Math.toDegrees((Math.PI - paddle.getAngle())/2);
 
-			add(paddleCanvas, paddle.getX(), paddle.getY());
+			GCompound paddleComp = new GCompound();
+			paddleComp.setLocation(paddle.getX(), paddle.getY());
+
+			GArc paddleArc = new GArc(0, 0, paddle.getRadius()*2, paddle.getRadius()*2,
+			                          start, sweep);
+			paddleArc.setFilled();
+
+			GArc paddleHide = new GArc(dx, dy,
+			                           paddle.getWidth() - 2*dx, paddle.getHeight() - dy,
+			                           start, sweep);
+			paddleArc.setColor(Color.WHITE);
+			paddleArc.setFilled(true);
+
+			paddleComp.add(paddleArc);
+			paddleComp.add(paddleHide);
+			paddleComp.markAsComplete();
+
+			obj = paddleComp;
 		} else {
 			throw new IllegalArgumentException("I don't know how to display a "
 			                                   + entity.getClass());
@@ -165,14 +215,18 @@ public class View extends GraphicsProgram implements Observer {
 	private void drawBackground() {
 		GCompound buffer = new GCompound();
 
-		//Playing field
-		GRect field = new GRect((getWidth() - state.getWidth() * scale)/2,
-		                        (getHeight() - state.getHeight() * scale)/2,
-		                        state.getWidth() * scale,
-		                        state.getHeight() * scale);
-		field.setColor(Color.WHITE);
-		field.setFilled(true);
-		buffer.add(field);
+		GRect left = new GRect(0, 0, fieldOffsetX, getHeight());
+		GRect right = new GRect(getWidth() - fieldOffsetX, 0,
+		                        fieldOffsetX, getHeight());
+		GRect top = new GRect(0, 0, getWidth(), fieldOffsetY);
+		GRect bottom = new GRect(0, getHeight()-fieldOffsetY, getWidth(), fieldOffsetY);
+
+		left.setFilled(true);
+		right.setFilled(true);
+		top.setFilled(true);
+		bottom.setFilled(true);
+
+		buffer.add(left, right, top, bottom);
 
 		buffer.markAsComplete();
 
