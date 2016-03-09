@@ -35,7 +35,7 @@ public class GameState extends Observable {
 	private boolean paused = false, gameOver = false;
 	private int score = 0;
 	private double width, height;
-	private GameDelta delta;
+	private GameDelta delta = new GameDelta();
 
 	/**
 	 * Contains information about what changed since last time
@@ -61,6 +61,13 @@ public class GameState extends Observable {
 			this.scoreDelta = scoreDelta;
 			this.pausedToggled = pausedToggled;
 			this.gameOverToggled = gameOverToggled;
+		}
+
+		GameDelta() {
+			entitiesDestroyed = new ArrayList<Entity>();
+			entitiesMoved = new ArrayList<Entity>();
+			entitiesChanged = new HashSet<Entity>();
+			entitiesCollided = new ArrayList<Pair<Entity, Entity>>();
 		}
 
 		/**
@@ -106,6 +113,11 @@ public class GameState extends Observable {
 		setChanged();
 	}
 
+	protected void addCollided(Entity e1, Entity e2) {
+		delta.entitiesChanged.add(new Pair<Entity, Entity>(e1, e2));
+		setChanged();
+	}
+
 	protected void add(Entity e) {
 		entities.add(e);
 		delta.entitiesAdded.add(e);
@@ -119,7 +131,8 @@ public class GameState extends Observable {
 	}
 
 	void endTick() {
-		notifyObservers();
+		notifyObservers(delta);
+		delta = new GameDelta();
 	}
 
 	/**
