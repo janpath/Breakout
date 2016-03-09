@@ -89,7 +89,7 @@ public class Vector2D {
 		return Math.sqrt(getX0() * getX0() + getX1() * getX1());
 	}
 
-	public Vector2D divide(double d) {
-		return new Vector2D(getX0() / d, getX1() / d);
+	public Vector2D scale(double scale) {
+		return new Vector2D(getX0() * scale, getX1() * scale);
 	}
 }

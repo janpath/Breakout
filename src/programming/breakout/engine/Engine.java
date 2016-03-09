@@ -102,13 +102,13 @@ public class Engine implements Runnable {
 	 * this method moves the ball
 	 */
 	private void moveBall() {
-		if (noCollisionPossible()) {
-			Vector2D newPosition = ball.getPosition().add(ball.getVelocity());
-			ball.setPosition(newPosition);
-			state.addMoved(ball);
-		} else {
+		if (!noCollisionPossible()) {
 			handleCollisions();
 		}
+
+		Vector2D newPosition = ball.getPosition().add(ball.getVelocity());
+		ball.setPosition(newPosition);
+		state.addMoved(ball);
 	}
 
 	private void handleCollisions() {
@@ -191,8 +191,8 @@ public class Engine implements Runnable {
 	 * this method handles a possible collision with a brick
 	 */
 	private void handleBrickCollision() {
-		if (whichBrick() != null) {
-			Rectangle brick = whichBrick();
+		Rectangle brick = whichBrick();
+		if (brick != null) {
 			handleRectCollision(brick);
 			bricks.remove(brick);
 			state.remove(brick);
@@ -206,7 +206,7 @@ public class Engine implements Runnable {
 		Ball arc = paddle.getPaddleArc();
 		if (rectangleIsHit(paddle) && ballIsHit(arc)) {
 			Vector2D distance = ball.getCenter().add(arc.getCenter());
-			Vector2D norm = distance.divide(distance.getLength());
+			Vector2D norm = distance.scale(1d/distance.getLength());
 			double scalar = norm.dotProduct(ball.getVelocity());
 			Vector2D dotVector = new Vector2D(scalar, scalar);
 			Vector2D mirroredVelocity = ball.getVelocity().sub(dotVector).sub(dotVector);
@@ -234,18 +234,18 @@ public class Engine implements Runnable {
 
 		// a vector representing the center of the ball
 		Vector2D ballCenter = ball.getCenter();
-		Vector2D rectCenter = r.getPosition().add(new Vector2D(r.getWidth() / 2.0, r.getHeight() / 2.0));
-		Vector2D centerDistance = rectCenter.add(ballCenter);
-		double alpha = ballCenter.dotProduct(rectCenter) / ballCenter.getLength() * rectCenter.getLength();
+		Vector2D rectCenter = r.getPosition().add(new Vector2D(r.getX() + r.getWidth() / 2.0, r.getY() + r.getHeight() / 2.0));
+		Vector2D centerDistance = rectCenter.add(ballCenter.scale(-1));
+		double alpha = ballCenter.dotProduct(rectCenter) / ( ballCenter.getLength() * rectCenter.getLength() );
 
 		double innerRectDist;
 		// ball is to the right or left
 		if (ball.getX() < r.getX() || ball.getX() + 2 * ball.getRadius() > r.getX() + r.getWidth()) {
-			innerRectDist = r.getWidth() / 2.0 / Math.asin(alpha);
+			innerRectDist = r.getWidth() / 2.0 / Math.acos(alpha);
 		}
 		// ball is to the top or bottom
 		else if (ball.getY() + 2 * ball.getRadius() > r.getY() + r.getHeight() || ball.getY() < r.getY()) {
-			innerRectDist = r.getHeight() / 2.0 / Math.asin(alpha);
+			innerRectDist = r.getHeight() / 2.0 / Math.acos(alpha);
 		} else {
 			innerRectDist = 0;
 		}
