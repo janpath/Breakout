@@ -41,7 +41,6 @@ public class Engine implements Runnable {
 	private Paddle paddle;
 	private double paddleLength = 0.2 * PLAYING_FIELD_WIDTH;
 	private double paddleHeight = 0.1 * paddleLength;
-	private double paddleParabolaFactor = 0.01;
 
 	/**
 	 * Bricks
@@ -204,9 +203,14 @@ public class Engine implements Runnable {
 	 * this method handles a possible collision with the paddle
 	 */
 	private void handlePaddleCollision() {
-		
-		if (rectangleIsHit(paddle) && ballIsHit(paddle.getPaddleArc())) {
-			
+		Ball arc = paddle.getPaddleArc();
+		if (rectangleIsHit(paddle) && ballIsHit(arc)) {			
+			Vector2D distance = ball.getCenter().add(arc.getCenter());
+			Vector2D norm = distance.divide(distance.getLength());
+			double scalar = norm.dotProduct(ball.getVelocity());
+			Vector2D dotVector = new Vector2D (scalar, scalar);
+			Vector2D mirroredVelocity = ball.getVelocity().sub(dotVector).sub(dotVector);			
+			ball.setVelocity(mirroredVelocity);
 		}
 
 	}
@@ -217,13 +221,11 @@ public class Engine implements Runnable {
 		// a vector representing the center of the ball
 		Vector2D collisionCenter = new Vector2D(b.getX() + b.getRadius(),
 				b.getY() + b.getRadius());		
-		Vector2D ballRadius = new Vector2D(ball.getRadius(), ball.getRadius());
-		Vector2D paddleRadius = new Vector2D(b.getRadius(), b.getRadius());
 		
 		double collisionDistance = ball.getRadius() + b.getRadius();
-		Vector2D distance = ballCenter.add(ballRadius).add(paddleRadius).add(collisionCenter);
+		Vector2D distance = ballCenter.add(collisionCenter);
 		
-		if (distance.getLength() <= collisionDistance) {
+		if (distance.getLength() < collisionDistance) {
 			return true;
 		}
 		return false;
@@ -311,10 +313,10 @@ public class Engine implements Runnable {
 	 * creates the paddle collision arc
 	 */
 	private Ball createPaddleArc() {
-		double arcRadius = ((paddle.getHeight() * paddle.getHeight()) + (paddle.getWidth() * paddle.getWidth() / 4))
-				/ (2 * paddle.getHeight());
-		double x = (paddle.getWidth() / 2) - arcRadius;
-		double y = paddle.getHeight();
+		double arcRadius = ((paddleHeight * paddleHeight) + (paddleLength * paddleLength / 4))
+				/ (2 * paddleHeight);
+		double x = (paddleLength / 2) - arcRadius;
+		double y = paddleHeight;
 		Vector2D position = new Vector2D(x, y);
 		return new Ball(position, arcRadius);
 	}
