@@ -57,7 +57,7 @@ public class Engine implements Runnable {
 	private static final Vector2D START_POS = new Vector2D(PLAYING_FIELD_WIDTH / 2, PLAYING_FIELD_HEIGHT / 2);
 	private static final double RADIUS = 2;
 	/* Velocity in units per frame */
-	private Vector2D velocity = new Vector2D(0.0, -1.0);
+	private Vector2D velocity = new Vector2D(0.0, -1.5);
 	private Ball ball;
 
 	/**
@@ -124,8 +124,8 @@ public class Engine implements Runnable {
 	 */
 	private boolean noCollisionPossible() {
 		if (ball.getY() - ball.getRadius() > getLowestBrickY()
-				&& ball.getX() + (3 * ball.getRadius()) < PLAYING_FIELD_WIDTH && ball.getX() - ball.getRadius() > 0
-				&& ball.getY() + (3 * ball.getRadius()) < paddle.getY()) {
+		    && ball.getX() + (3 * ball.getRadius()) < PLAYING_FIELD_WIDTH && ball.getX() - ball.getRadius() > 0
+		    && ball.getY() + (3 * ball.getRadius()) < paddle.getY()) {
 			return true;
 		}
 		return false;
@@ -140,15 +140,15 @@ public class Engine implements Runnable {
 		double y = ball.getVelocity().getX1();
 
 		switch (whichWall()) {
-		// right
+			// right
 		case 1:
 			ball.setVelocity(new Vector2D(-x, y));
 			break;
-		// left
+			// left
 		case 2:
 			ball.setVelocity(new Vector2D(-x, y));
 			break;
-		// top
+			// top
 		case 3:
 			ball.setVelocity(new Vector2D(x, -y));
 			break;
@@ -311,7 +311,7 @@ public class Engine implements Runnable {
 	 * creates the paddle, which is a rectangle
 	 */
 	private Paddle createPaddle() {
-		Vector2D startingPosition = new Vector2D(state.getWidth() / 2, state.getHeight() - paddleHeight);
+		Vector2D startingPosition = new Vector2D(state.getWidth() / 2, state.getHeight() - paddleHeight*2);
 		return new Paddle(startingPosition, paddleLength, paddleHeight);
 	}
 
