@@ -71,4 +71,8 @@ public class Vector2D {
 	public double dotProduct (Vector2D otherVector) {
 		return getX0() * otherVector.getX0() + getX1() * otherVector.getX1();
 	}
+	
+	public double getLength() {
+		return Math.sqrt(getX0() * getX0() + getX1() * getX1());
+	}
 }

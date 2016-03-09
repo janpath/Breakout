@@ -204,13 +204,29 @@ public class Engine implements Runnable {
 	 * this method handles a possible collision with the paddle
 	 */
 	private void handlePaddleCollision() {
+		
+		if (rectangleIsHit(paddle) && ballIsHit(paddle.getPaddleArc())) {
+			
+		}
 
+	}
+
+	private boolean ballIsHit(Ball b) {
 		// a vector representing the center of the ball
 		Vector2D ballCenter = new Vector2D(ball.getX() + ball.getRadius(), ball.getY() + ball.getRadius());
 		// a vector representing the center of the ball
-		Vector2D collisionCenter = new Vector2D(paddleArc.getX() + paddleArc.getRadius(),
-				paddleArc.getY() + paddleArc.getRadius());
-
+		Vector2D collisionCenter = new Vector2D(b.getX() + b.getRadius(),
+				b.getY() + b.getRadius());		
+		Vector2D ballRadius = new Vector2D(ball.getRadius(), ball.getRadius());
+		Vector2D paddleRadius = new Vector2D(b.getRadius(), b.getRadius());
+		
+		double collisionDistance = ball.getRadius() + b.getRadius();
+		Vector2D distance = ballCenter.add(ballRadius).add(paddleRadius).add(collisionCenter);
+		
+		if (distance.getLength() <= collisionDistance) {
+			return true;
+		}
+		return false;
 	}
 
 	private boolean rectangleIsHit(Rectangle r) {
