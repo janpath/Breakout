@@ -130,13 +130,30 @@ public class Engine implements Runnable {
 	}
 
 	/**
-	 * this method moves the ball, not asking for collisions
+	 * this method moves the ball
 	 */
 	private void moveBall() {
+		while(noCollisionPossible()) {
 		Vector2D newPosition = ball.getPosition().add(ball.getVelocity());
 		ball.setPosition(newPosition);
+		}
 	}
-
+	
+	/**
+	 * checks whether the ball is inside a "save" part of the playing field
+	 */
+	private boolean noCollisionPossible() {				
+		if(				
+				ball.getY() + (3 * ball.getRadius()) > getLowestBrickY() &&
+				ball.getX() + (3 * ball.getRadius()) < PLAYING_FIELD_HEIGHT &&
+				ball.getX() - (2 * ball.getRadius()) > 0 &&
+				ball.getY() + (3 * ball.getRadius()) < paddle.getY())
+		{
+			return true;
+		}
+		return false;
+	}
+	
 	/**
 	 * this method handles a possible collision with a wall. If no Wall is hit,
 	 * nothing happens
@@ -295,21 +312,6 @@ public class Engine implements Runnable {
 		}
 	}
 
-	/**
-	 * checks whether the ball is far enough away from anything which it can
-	 * collide with
-	 */
-	private boolean noCollisionPossible() {
-		// no collision possible
-		if (ball.getY() > getLowestBrickY() + 3 * ball.getRadius() 
-		&& ball.getY() + 3 * ball.getRadius() < PLAYING_FIELD_HEIGHT
-		&& ball.getX() + 3 * ball.getRadius() < PLAYING_FIELD_WIDTH
-				&& ball.getX() - 3 * ball.getRadius() > 0) {
-			return true;
-		} else {
-			return false;
-		}
-	}
 
 	/**
 	 * returns the y coordinate of the lowest brick on the screen (the one with
