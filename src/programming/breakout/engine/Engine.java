@@ -83,7 +83,7 @@ public class Engine implements Runnable {
 		while (isRunning()) {
 			long start = System.currentTimeMillis();
 			moveBall();
-
+			handleCollisions();
 			state.setChanged();
 			state.notifyObservers();
 
@@ -108,10 +108,16 @@ public class Engine implements Runnable {
 		do {
 			Vector2D newPosition = ball.getPosition().add(ball.getVelocity());
 			ball.setPosition(newPosition);
-		} while (noCollisionPossible());
-
+		} while (noCollisionPossible());				
 	}
 
+	private void handleCollisions() {
+		handleBrickCollision();
+		handlePaddleCollision();
+		handleWallCollision();
+		moveBall();
+	}
+	
 	/**
 	 * checks whether the ball is inside a "save" part of the playing field
 	 */
@@ -144,15 +150,9 @@ public class Engine implements Runnable {
 		// top
 		case 3:
 			ball.setVelocity(new Vector2D(x, -y));
-			break;
-		// other
-		case 4:
-			handleBrickCollision();
-			handlePaddleCollision();
-			// no break
-			// no collision;
+			break;					
 		default:
-			moveBall();
+			// nothing happens
 		}
 
 	}
@@ -164,8 +164,8 @@ public class Engine implements Runnable {
 	 * @param rect
 	 *            the rectangle that is hit.
 	 */
-	private void handleRectCollision(Rectangle rect) {
-
+	private void handleRectCollision(Rectangle rect) {		
+		
 		// a vector representing the center of the brick which is hit
 		Vector2D brickCenter = new Vector2D(rect.getX() + rect.getHeight() / 2, rect.getY() + rect.getWidth() / 2);
 		// a vector representing the center of the ball
