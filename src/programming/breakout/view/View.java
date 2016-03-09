@@ -33,6 +33,7 @@ import acm.graphics.GCompound;
 import acm.graphics.GObject;
 import acm.graphics.GOval;
 import acm.graphics.GRect;
+import acm.graphics.GArc;
 import acm.program.GraphicsProgram;
 
 import programming.breakout.engine.Ball;
@@ -40,6 +41,8 @@ import programming.breakout.engine.Entity;
 import programming.breakout.engine.GameState;
 import programming.breakout.engine.Rectangle;
 import programming.breakout.engine.Paddle;
+
+import static programming.breakout.engine.GameState.GameDelta;
 
 /**
  * A simple view for the breakout program
@@ -91,14 +94,14 @@ public class View extends GraphicsProgram implements Observer {
 	 */
 	@Override
 	public void update(Observable observable, Object arg) {
-		if(arg instanceof GameState.GameDelta) {
+		if(arg instanceof GameDelta) {
 			GameDelta delta = (GameDelta) arg;
 
 			for(Entity entity : delta.entitiesChanged) {
 				updateEntity(entity);
 			}
 
-			for(Entity entity : delta.entitiesRemoved) {
+			for(Entity entity : delta.entitiesDestroyed) {
 				removeEntity(entity);
 			}
 
@@ -113,7 +116,7 @@ public class View extends GraphicsProgram implements Observer {
 
 	private void addEntity(Entity entity) {
 		GObject obj = entity2GObject(entity);
-		entities.add(entity, obj);
+		entities.put(entity, obj);
 		playingField.add(obj);
 	}
 
@@ -136,13 +139,13 @@ public class View extends GraphicsProgram implements Observer {
 		playingField = new GCompound();
 
 		for (int i = 0; i < state.getEntityList().size(); i += 1) {
-			addEntity(entity);
+			addEntity(state.getEntityList().get(i));
 		}
 
 		fieldOffsetX = ( getWidth() - state.getWidth() * scale )/2;
 		fieldOffsetY = ( getHeight() - state.getHeight() * scale )/2;
 
-		buffer.setLocation(offsetX, offsetY);
+		playingField.setLocation(fieldOffsetX, fieldOffsetY);
 
 		add(playingField);
 		remove(oldField);
@@ -178,7 +181,7 @@ public class View extends GraphicsProgram implements Observer {
 			//Draw paddle
 			Paddle paddle = (Paddle) entity;
 			double dy = paddle.getHeight()/2;
-			double dx = Math.cos(paddle.getAngl()) * dy;
+			double dx = Math.cos(paddle.getAngle()) * dy;
 			double start = Math.toDegrees(Math.PI/2 - paddle.getAngle());
 			double sweep = Math.toDegrees((Math.PI - paddle.getAngle())/2);
 
@@ -187,7 +190,7 @@ public class View extends GraphicsProgram implements Observer {
 
 			GArc paddleArc = new GArc(0, 0, paddle.getRadius()*2, paddle.getRadius()*2,
 			                          start, sweep);
-			paddleArc.setFilled();
+			paddleArc.setFilled(true);
 
 			GArc paddleHide = new GArc(dx, dy,
 			                           paddle.getWidth() - 2*dx, paddle.getHeight() - dy,
@@ -226,7 +229,10 @@ public class View extends GraphicsProgram implements Observer {
 		top.setFilled(true);
 		bottom.setFilled(true);
 
-		buffer.add(left, right, top, bottom);
+		buffer.add(left);
+		buffer.add(right);
+		buffer.add(top);
+		buffer.add(bottom);
 
 		buffer.markAsComplete();
 
