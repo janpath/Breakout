@@ -108,10 +108,12 @@ public class View extends GraphicsProgram implements Observer {
 			for(Entity entity : delta. entitiesAdded) {
 				addEntity(entity);
 			}
+
 		}
 		else  {
 			redrawAll();
 		}
+		add(background);
 	}
 
 	private void addEntity(Entity entity) {
@@ -167,6 +169,31 @@ public class View extends GraphicsProgram implements Observer {
 			gball.setFilled(true);
 			obj = gball;
 
+		} else if(entity instanceof Paddle) {
+			//Draw paddle
+			Paddle paddle = (Paddle) entity;
+
+			double arcStart = Math.toDegrees((Math.PI - paddle.getAngle())/2);
+
+			GCompound paddleComp = new GCompound();
+			paddleComp.setLocation((paddle.getX() - paddle.getRadius() + paddle.getWidth()/2)*scale, paddle.getY()*scale);
+
+			GArc paddleArc = new GArc(0, 0, paddle.getRadius()*2*scale, paddle.getRadius()*2*scale,
+			                          arcStart, Math.toDegrees(paddle.getAngle()));
+			paddleArc.setFilled(true);
+
+			double hideOffset = paddle.getHeight()/2*scale;
+			GArc paddleHide = new GArc(hideOffset/2, hideOffset,
+			                           paddle.getRadius()*2*scale - hideOffset, paddle.getRadius()*2*scale - hideOffset,
+			                           arcStart, Math.toDegrees(paddle.getAngle()));
+			paddleHide.setColor(Color.GRAY);
+			paddleHide.setFilled(true);
+
+			paddleComp.add(paddleArc);
+			paddleComp.add(paddleHide);
+			paddleComp.markAsComplete();
+
+			obj = paddleComp;
 		} else if (entity instanceof Rectangle) {
 			//Draw a rectangle
 			Rectangle rect = (Rectangle) entity;
@@ -177,33 +204,7 @@ public class View extends GraphicsProgram implements Observer {
 			grect.setFilled(true);
 			obj = grect;
 
-		} else if(entity instanceof Paddle) {
-			//Draw paddle
-			Paddle paddle = (Paddle) entity;
-			double dy = paddle.getHeight()/2;
-			double dx = Math.cos(paddle.getAngle()) * dy;
-			double start = Math.toDegrees(Math.PI/2 - paddle.getAngle());
-			double sweep = Math.toDegrees((Math.PI - paddle.getAngle())/2);
-
-			GCompound paddleComp = new GCompound();
-			paddleComp.setLocation(paddle.getX(), paddle.getY());
-
-			GArc paddleArc = new GArc(0, 0, paddle.getRadius()*2, paddle.getRadius()*2,
-			                          start, sweep);
-			paddleArc.setFilled(true);
-
-			GArc paddleHide = new GArc(dx, dy,
-			                           paddle.getWidth() - 2*dx, paddle.getHeight() - dy,
-			                           start, sweep);
-			paddleArc.setColor(Color.WHITE);
-			paddleArc.setFilled(true);
-
-			paddleComp.add(paddleArc);
-			paddleComp.add(paddleHide);
-			paddleComp.markAsComplete();
-
-			obj = paddleComp;
-		} else {
+		}  else {
 			throw new IllegalArgumentException("I don't know how to display a "
 			                                   + entity.getClass());
 		}

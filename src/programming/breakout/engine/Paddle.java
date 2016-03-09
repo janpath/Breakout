@@ -23,6 +23,6 @@ public class Paddle extends Rectangle {
 
 
 	public double getAngle() {
-		return Math.asin((getWidth()/2) / (getRadius() - getHeight())) * 2;
+		return Math.asin((getWidth()/2d) / getRadius()) * 2d;
 	}
 }
