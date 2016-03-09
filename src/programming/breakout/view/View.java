@@ -135,6 +135,21 @@ public class View extends GraphicsProgram implements Observer {
 			grect.setFilled(true);
 			obj = grect;
 
+		} else if(entity instanceof Paddle) {
+			//Draw paddle inside a new GCanvas, so we can use clipping.
+			Paddle paddle = (Paddle) entity;
+			GCanvas paddleCanvas = new GCanvas() {
+					@Override
+					public void paint(Graphics g) {
+						g.clipRect(0, 0, paddleCanvas.getWidth(), paddle.getHeight());
+						super.paint(g);
+					}
+				};
+			GOval oval = new GOval(0, 0, paddle.getRadius()*2, paddle.getRadius()*2);
+			oval.setFilled(true);
+			paddleCanvas.add(oval);
+
+			add(paddleCanvas, paddle.getX(), paddle.getY());
 		} else {
 			throw new IllegalArgumentException("I don't know how to display a "
 			                                   + entity.getClass());
