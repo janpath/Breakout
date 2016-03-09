@@ -109,7 +109,7 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 
 		if (!controlledObject.getPosition().equals(newPosition)){
 			controlledObject.setPosition(newPosition);
-			state.addChanged(controlledObject);
+			state.addMoved(controlledObject);
 		}
 
 		assert isInField(): "Controlled object moved out of playing field.";

@@ -97,8 +97,8 @@ public class View extends GraphicsProgram implements Observer {
 		if(arg instanceof GameDelta) {
 			GameDelta delta = (GameDelta) arg;
 
-			for(Entity entity : delta.entitiesChanged) {
-				updateEntity(entity);
+			for(Entity entity : delta.entitiesMoved) {
+				updateMoved(entity);
 			}
 
 			for(Entity entity : delta.entitiesDestroyed) {
@@ -127,7 +127,7 @@ public class View extends GraphicsProgram implements Observer {
 		entities.remove(entity);
 	}
 
-	private void updateEntity(Entity entity) {
+	private void updateMoved(Entity entity) {
 		entities.get(entity).setLocation(entity.getX()*scale, entity.getY()*scale);
 	}
 
