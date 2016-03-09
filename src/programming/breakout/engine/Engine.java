@@ -121,9 +121,10 @@ public class Engine implements Runnable {
 	 * checks whether the ball is inside a "save" part of the playing field
 	 */
 	private boolean noCollisionPossible() {
-		if (ball.getY() + (3 * ball.getRadius()) > getLowestBrickY()
-				&& ball.getX() + (3 * ball.getRadius()) < PLAYING_FIELD_HEIGHT
-				&& ball.getX() - (2 * ball.getRadius()) > 0 && ball.getY() + (3 * ball.getRadius()) < paddle.getY()) {
+		if (ball.getY() - ball.getRadius() > getLowestBrickY()
+				&& ball.getX() + (3 * ball.getRadius()) < PLAYING_FIELD_WIDTH
+				&& ball.getX() - ball.getRadius() > 0 
+				&& ball.getY() + (3 * ball.getRadius()) < paddle.getY()) {
 			return true;
 		}
 		return false;
@@ -284,11 +285,11 @@ public class Engine implements Runnable {
 	 * the highest y)
 	 */
 	private double getLowestBrickY() {
-		double minY = Double.POSITIVE_INFINITY;
+		double maxY = Double.NEGATIVE_INFINITY;
 		for (Rectangle r : bricks) {
-			minY = (r.getY() < minY) ? r.getY() : minY;
+			maxY = (r.getY() + r.getHeight() > maxY) ? r.getY() + r.getHeight() : maxY;
 		}
-		return minY;
+		return maxY;
 	}
 
 	/**
