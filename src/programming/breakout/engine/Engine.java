@@ -25,21 +25,10 @@ import java.util.ArrayList;
 public class Engine implements Runnable {
 
 	/**
-	 * game state
-	 */
-	private boolean isPaused = false;
-
-	/**
-	 * Playing field
-	 */
-	private static final double PLAYING_FIELD_HEIGHT = 130;
-	private static final double PLAYING_FIELD_WIDTH = 80;
-
-	/**
 	 * Paddle
 	 */
 	private Rectangle paddle;
-	private double paddleLength = 0.2 * PLAYING_FIELD_WIDTH;
+	private double paddleLength = 0.2 * state.getWidth();
 	private double paddleHeight = 0.1 * paddleLength;
 	private double paddleParabolaFactor = 0.01;
 
@@ -55,7 +44,7 @@ public class Engine implements Runnable {
 	/**
 	 * Ball
 	 */
-	private static final Vector2D START_POS = new Vector2D(PLAYING_FIELD_WIDTH / 2, PLAYING_FIELD_HEIGHT / 2);
+	private static final Vector2D START_POS = new Vector2D(state.getWidth() / 2, state.getHeight() / 2);
 	private static final double RADIUS = 2;
 	/* Velocity in units per frame */
 	private Vector2D velocity = new Vector2D(1.0, 0.0);
@@ -69,6 +58,9 @@ public class Engine implements Runnable {
 	private GameState state;
 
 	public Engine(GameState state) {
+		state.setWidth(80);
+		state.setHeight(130);
+
 		this.state = state;
 		this.paddle = createPaddle();
 		this.bricks = createBricks();
@@ -79,10 +71,9 @@ public class Engine implements Runnable {
 	public void run() {
 
 		setGameState();
-		
 		while (isRunning()) {
 			long start = System.currentTimeMillis();
-			moveBallIf();			
+			moveBallIf();
 
 			state.setChanged();
 			state.notifyObservers();
@@ -94,7 +85,7 @@ public class Engine implements Runnable {
 			} catch (InterruptedException ex) {
 			}
 		}
-		
+
 		this.ball = createBall();
 		run();
 		state.setGameOver(true);
@@ -146,19 +137,19 @@ public class Engine implements Runnable {
 		double y = ball.getVelocity().getX1();
 
 		switch (whichWall()) {
-		// right
+			// right
 		case 1:
 			ball.setVelocity(new Vector2D(-x, y));
 			break;
-		// left
+			// left
 		case 2:
 			ball.setVelocity(new Vector2D(-x, y));
 			break;
-		// top
+			// top
 		case 3:
 			ball.setVelocity(new Vector2D(x, -y));
 			break;
-		// other
+			// other
 		case 4:
 			handleBrickCollision();
 			handlePaddleCollision();
@@ -243,8 +234,8 @@ public class Engine implements Runnable {
 	
 	private double getParabolaX(double x) {
 		double offset = paddle.getX() + paddle.getWidth();
-		offset = (x < PLAYING_FIELD_WIDTH) ? -offset : offset;
-		return offset + (paddle.getWidth() * x / PLAYING_FIELD_WIDTH) /2.0;
+		offset = (x < state.getWidth()) ? -offset : offset;
+		return offset + (paddle.getWidth() * x / state.getWidth()) /2.0;
 	}
 	
 	private boolean rectangleIsHit(Rectangle r) {
@@ -278,7 +269,7 @@ public class Engine implements Runnable {
 	 */
 	private int whichWall() {
 		// right
-		if (ball.getX() + (2 * ball.getRadius()) >= PLAYING_FIELD_WIDTH) {
+		if (ball.getX() + (2 * ball.getRadius()) >= state.getWidth()) {
 			return 1;
 		}
 		// left
@@ -302,9 +293,9 @@ public class Engine implements Runnable {
 	private boolean noCollisionPossible() {
 		// no collision possible
 		if (ball.getY() > getLowestBrickY() + 3 * ball.getRadius()
-		&& ball.getY() + 3 * ball.getRadius() < PLAYING_FIELD_HEIGHT
-		&& ball.getX() + 3 * ball.getRadius() < PLAYING_FIELD_WIDTH
-				&& ball.getX() - 3 * ball.getRadius() > 0) {
+		    && ball.getY() + 3 * ball.getRadius() < state.getHeight()
+		    && ball.getX() + 3 * ball.getRadius() < state.getWidth()
+		    && ball.getX() - 3 * ball.getRadius() > 0) {
 			return true;
 		} else {
 			return false;
@@ -336,7 +327,7 @@ public class Engine implements Runnable {
 	 * creates the paddle, which is a rectangle
 	 */
 	private Rectangle createPaddle() {
-		Vector2D startingPosition = new Vector2D(PLAYING_FIELD_WIDTH / 2, PLAYING_FIELD_HEIGHT - paddleHeight);
+		Vector2D startingPosition = new Vector2D(state.getWidth() / 2, state.getHeight() - paddleHeight);
 		Rectangle paddle = new Rectangle(startingPosition, paddleLength, paddleHeight);
 		return paddle;
 	}
@@ -355,9 +346,9 @@ public class Engine implements Runnable {
 	 */
 	private ArrayList<Rectangle> createBricks() {
 		ArrayList<Rectangle> bricks = new ArrayList<Rectangle>();
-		double brickSpacePerCol = PLAYING_FIELD_WIDTH - (numberOfBrickCols * brickWidth);
+		double brickSpacePerCol = state.getWidth() - (numberOfBrickCols * brickWidth);
 		double colPadding = brickSpacePerCol / (numberOfBrickCols + 1);
-		double brickSpacePerRow = PLAYING_FIELD_HEIGHT * 0.33 - (numberOfBrickRows * brickHeight);
+		double brickSpacePerRow = state.getHeight() * 0.33 - (numberOfBrickRows * brickHeight);
 		double rowPadding = brickSpacePerRow / (numberOfBrickRows + 1);
 		double x = colPadding;
 		double y = rowPadding;
@@ -382,10 +373,7 @@ public class Engine implements Runnable {
 	 * initializes the GameState
 	 */
 	private void setGameState() {
-		state.setGameOver(false);
-		state.setHeight(PLAYING_FIELD_HEIGHT);
-		state.setWidth(PLAYING_FIELD_WIDTH);
-		ArrayList<Entity> list = state.getEntityList();		
+		ArrayList<Entity> list = state.getEntityList();
 		list.addAll(bricks);
 		list.add(ball);
 		list.add(paddle);
@@ -395,7 +383,7 @@ public class Engine implements Runnable {
 	 * checks whether the game is still running
 	 */
 	private boolean isRunning() {
-		return ball.getY() < PLAYING_FIELD_HEIGHT && !isPaused;
+		return ball.getY() < state.getHeight() && !state.isPaused();
 	}
 
 }
