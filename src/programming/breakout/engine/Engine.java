@@ -83,8 +83,7 @@ public class Engine implements Runnable {
 			long start = System.currentTimeMillis();
 			moveBall();
 			handleCollisions();
-			state.setChanged();
-			state.notifyObservers();
+			state.endTick();
 
 			long elapsed = start - System.currentTimeMillis();
 
