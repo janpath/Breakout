@@ -84,7 +84,6 @@ public class Engine implements Runnable {
 			while (isRunning()) {
 				long start = System.currentTimeMillis();
 				moveBall();
-				handleCollisions();
 				state.endTick();
 
 				long elapsed = start - System.currentTimeMillis();
@@ -103,11 +102,13 @@ public class Engine implements Runnable {
 	 * this method moves the ball
 	 */
 	private void moveBall() {
-		do {
+		if (noCollisionPossible()) {
 			Vector2D newPosition = ball.getPosition().add(ball.getVelocity());
 			ball.setPosition(newPosition);
 			state.addMoved(ball);
-		} while (noCollisionPossible());
+		} else {
+			handleCollisions();
+		}
 	}
 
 	private void handleCollisions() {
