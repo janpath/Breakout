@@ -125,6 +125,7 @@ public class View extends GraphicsProgram implements Observer {
 
 	private void removeEntity(Entity entity) {
 		playingField.remove(entities.get(entity));
+		// spawnParticles(entities.get(entity));
 		entities.remove(entity);
 	}
 
@@ -135,29 +136,36 @@ public class View extends GraphicsProgram implements Observer {
 		}
 	}
 
+	// /**
+	//  * Make fancy particles when something is destroyed.
+	//  */
+	// private void spawnParticles(GRectangle rect) {
+
+	// }
+
 	private GCompound playingField = new GCompound();
 	/**
 	 * Draw entities
 	 */
 	private int n = 0;
 	private void redrawAll() {
-			entities.clear();
-			GCompound oldField = playingField;
-			playingField = new GCompound();
+		entities.clear();
+		GCompound oldField = playingField;
+		playingField = new GCompound();
 
-			for (int i = 0; i < state.getEntityList().size(); i += 1) {
-				addEntity(state.getEntityList().get(i));
-			}
+		for (int i = 0; i < state.getEntityList().size(); i += 1) {
+			addEntity(state.getEntityList().get(i));
+		}
 
-			fieldOffsetX = ( getWidth() - state.getWidth() * scale )/2;
-			fieldOffsetY = ( getHeight() - state.getHeight() * scale )/2;
+		fieldOffsetX = ( getWidth() - state.getWidth() * scale )/2;
+		fieldOffsetY = ( getHeight() - state.getHeight() * scale )/2;
 
-			playingField.setLocation(fieldOffsetX, fieldOffsetY);
+		playingField.setLocation(fieldOffsetX, fieldOffsetY);
 
-			removeAll();
-			add(playingField);
+		removeAll();
+		add(playingField);
 
-			drawBackground();
+		drawBackground();
 	}
 
 	/**

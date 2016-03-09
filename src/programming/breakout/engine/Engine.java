@@ -57,7 +57,7 @@ public class Engine implements Runnable {
 	private static final Vector2D START_POS = new Vector2D(PLAYING_FIELD_WIDTH / 2, PLAYING_FIELD_HEIGHT / 2);
 	private static final double RADIUS = 2;
 	/* Velocity in units per frame */
-	private Vector2D velocity = new Vector2D(0.0, -1.5);
+	private Vector2D velocity = new Vector2D(0.0, -1.8);
 	private Ball ball;
 
 	/**
@@ -72,8 +72,6 @@ public class Engine implements Runnable {
 		state.setHeight(PLAYING_FIELD_HEIGHT);
 		state.setWidth(PLAYING_FIELD_WIDTH);
 		this.paddle = createPaddle();
-		this.bricks = createBricks();
-		this.ball = createBall();
 	}
 
 	@Override
@@ -81,6 +79,7 @@ public class Engine implements Runnable {
 
 		while (true) {
 			setGameState();
+
 			while (isRunning()) {
 				long start = System.currentTimeMillis();
 				if (!state.isPaused()) {
@@ -95,8 +94,6 @@ public class Engine implements Runnable {
 				} catch (InterruptedException ex) {
 				}
 			}
-
-			this.ball = createBall();
 		}
 	}
 
@@ -357,10 +354,14 @@ public class Engine implements Runnable {
 	 */
 	private void setGameState() {
 		ArrayList<Entity> list = state.getEntityList();
+		this.bricks = createBricks();
+		this.ball = createBall();
 		list.clear();
 		list.addAll(bricks);
 		list.add(ball);
 		list.add(paddle);
+		state.setChanged();
+		state.notifyObservers();
 	}
 
 	/**
