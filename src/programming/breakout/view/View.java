@@ -55,6 +55,8 @@ public class View extends GraphicsProgram implements Observer {
 	private GameState state;
 	private double scale;
 
+	private static final Color bgColor = Color.BLACK;
+
 	private double fieldOffsetX, fieldOffsetY;
 
 	private HashMap<Entity, GObject> entities = new HashMap<Entity, GObject>();
@@ -69,7 +71,7 @@ public class View extends GraphicsProgram implements Observer {
 	 */
 	@Override
 	public void init() {
-		setBackground(Color.GRAY);
+		setBackground(bgColor);
 
 		// Resize things when window is resized
 		addComponentListener(new ComponentAdapter() {
@@ -186,7 +188,7 @@ public class View extends GraphicsProgram implements Observer {
 			GArc paddleHide = new GArc(hideOffset/2, hideOffset,
 			                           paddle.getRadius()*2*scale - hideOffset, paddle.getRadius()*2*scale - hideOffset,
 			                           arcStart, Math.toDegrees(paddle.getAngle()));
-			paddleHide.setColor(Color.GRAY);
+			paddleHide.setColor(bgColor);
 			paddleHide.setFilled(true);
 
 			paddleComp.add(paddleArc);
@@ -224,16 +226,24 @@ public class View extends GraphicsProgram implements Observer {
 		                        fieldOffsetX, getHeight());
 		GRect top = new GRect(0, 0, getWidth(), fieldOffsetY);
 		GRect bottom = new GRect(0, getHeight()-fieldOffsetY, getWidth(), fieldOffsetY);
+		GRect border = new GRect(fieldOffsetX, fieldOffsetY,
+		                         state.getWidth()*scale, state.getHeight()*scale);
 
 		left.setFilled(true);
 		right.setFilled(true);
 		top.setFilled(true);
 		bottom.setFilled(true);
 
+		left.setColor(bgColor);
+		right.setColor(bgColor);
+		top.setColor(bgColor);
+		bottom.setColor(bgColor);
+
 		buffer.add(left);
 		buffer.add(right);
 		buffer.add(top);
 		buffer.add(bottom);
+		buffer.add(border);
 
 		buffer.markAsComplete();
 
