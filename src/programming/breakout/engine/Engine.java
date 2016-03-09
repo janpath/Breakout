@@ -38,7 +38,7 @@ public class Engine implements Runnable {
 	/**
 	 * Paddle
 	 */
-	private Rectangle paddle;
+	private Paddle paddle;
 	private double paddleLength = 0.2 * PLAYING_FIELD_WIDTH;
 	private double paddleHeight = 0.1 * paddleLength;
 	private double paddleParabolaFactor = 0.01;
@@ -108,7 +108,7 @@ public class Engine implements Runnable {
 		do {
 			Vector2D newPosition = ball.getPosition().add(ball.getVelocity());
 			ball.setPosition(newPosition);
-		} while (noCollisionPossible());				
+		} while (noCollisionPossible());
 	}
 
 	private void handleCollisions() {
@@ -117,7 +117,7 @@ public class Engine implements Runnable {
 		handleWallCollision();
 		moveBall();
 	}
-	
+
 	/**
 	 * checks whether the ball is inside a "save" part of the playing field
 	 */
@@ -150,7 +150,7 @@ public class Engine implements Runnable {
 		// top
 		case 3:
 			ball.setVelocity(new Vector2D(x, -y));
-			break;					
+			break;
 		default:
 			// nothing happens
 		}
@@ -164,8 +164,8 @@ public class Engine implements Runnable {
 	 * @param rect
 	 *            the rectangle that is hit.
 	 */
-	private void handleRectCollision(Rectangle rect) {		
-		
+	private void handleRectCollision(Rectangle rect) {
+
 		// a vector representing the center of the brick which is hit
 		Vector2D brickCenter = new Vector2D(rect.getX() + rect.getHeight() / 2, rect.getY() + rect.getWidth() / 2);
 		// a vector representing the center of the ball
@@ -205,33 +205,12 @@ public class Engine implements Runnable {
 	 */
 	private void handlePaddleCollision() {
 
-		// a vector representing the point on the paddle where the ball hits
-		Vector2D paddlePoint = new Vector2D(paddle.getX() + ball.getX() + ball.getRadius(), paddle.getY());
+		// a vector representing the center of the ball
+		Vector2D ballCenter = new Vector2D(ball.getX() + ball.getRadius(), ball.getY() + ball.getRadius());
+		// a vector representing the center of the ball
+		Vector2D collisionCenter = new Vector2D(paddleArc.getX() + paddleArc.getRadius(),
+				paddleArc.getY() + paddleArc.getRadius());
 
-		// the slope of the parabola
-		double paddleParabolaSlope = getParabolaY(paddlePoint.getX0()) / (2 * paddlePoint.getX0());
-
-		Vector2D normalizedVector = new Vector2D(-1, paddleParabolaSlope);
-
-		double dotProduct = normalizedVector.dotProduct(ball.getVelocity());
-
-		Vector2D normalizedVectorScaled = new Vector2D(-1, paddleParabolaSlope);
-
-		Vector2D mirroredVelocity = ball.getVelocity().sub(normalizedVectorScaled).sub(normalizedVectorScaled);
-
-		ball.setVelocity(mirroredVelocity);
-		System.out.println("afga");
-	}
-
-	private double getParabolaY(double x) {
-		x = getParabolaX(x);
-		return paddleParabolaFactor * x * x;
-	}
-
-	private double getParabolaX(double x) {
-		double offset = paddle.getX() + paddle.getWidth();
-		offset = (x < PLAYING_FIELD_WIDTH) ? -offset : offset;
-		return offset + (paddle.getWidth() * x / PLAYING_FIELD_WIDTH) / 2.0;
 	}
 
 	private boolean rectangleIsHit(Rectangle r) {
@@ -306,10 +285,22 @@ public class Engine implements Runnable {
 	/**
 	 * creates the paddle, which is a rectangle
 	 */
-	private Rectangle createPaddle() {
+	private Paddle createPaddle() {
 		Vector2D startingPosition = new Vector2D(PLAYING_FIELD_WIDTH / 2, PLAYING_FIELD_HEIGHT - paddleHeight);
-		Rectangle paddle = new Rectangle(startingPosition, paddleLength, paddleHeight);
+		Paddle paddle = new Paddle(startingPosition, paddleLength, paddleHeight, createPaddleArc());
 		return paddle;
+	}
+
+	/**
+	 * creates the paddle collision arc
+	 */
+	private Ball createPaddleArc() {
+		double arcRadius = ((paddle.getHeight() * paddle.getHeight()) + (paddle.getWidth() * paddle.getWidth() / 4))
+				/ (2 * paddle.getHeight());
+		double x = (paddle.getWidth() / 2) - arcRadius;
+		double y = paddle.getHeight();
+		Vector2D position = new Vector2D(x, y);
+		return new Ball(position, arcRadius);
 	}
 
 	/**
