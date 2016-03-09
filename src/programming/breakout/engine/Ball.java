@@ -55,4 +55,8 @@ public class Ball extends Entity {
 	public Rectangle getBounds() {
 		return new Rectangle(new Vector2D(getX() - radius, getY() - radius), 2 * radius, 2 * radius);
 	}
+	
+	public Vector2D getCenter() {
+		return new Vector2D(this.getX() + this.getRadius(), this.getY() + this.getRadius());
+	}
 }
