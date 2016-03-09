@@ -77,7 +77,7 @@ public class View extends GraphicsProgram implements Observer {
 		// Resize things when window is resized
 		addComponentListener(new ComponentAdapter() {
 				public void componentResized(ComponentEvent e) {
-					draw();
+					rescale();
 				}
 			});
 	}
@@ -85,11 +85,10 @@ public class View extends GraphicsProgram implements Observer {
 	/**
 	 * Redraw everything
 	 */
-	private void draw() {
+	private void rescale() {
 		scale = Math.min(getWidth()/state.getWidth(),
 		                 getHeight()/state.getHeight());
 		redrawAll();
-		drawBackground();
 	}
 
 	/**
@@ -116,7 +115,6 @@ public class View extends GraphicsProgram implements Observer {
 		else  {
 			redrawAll();
 		}
-		add(background);
 	}
 
 	private void addEntity(Entity entity) {
@@ -131,29 +129,35 @@ public class View extends GraphicsProgram implements Observer {
 	}
 
 	private void updateMoved(Entity entity) {
-		entities.get(entity).setLocation(entity.getX()*scale, entity.getY()*scale);
+		GObject obj = entities.get(entity);
+		if(obj != null) {
+			obj.setLocation(entity.getX()*scale, entity.getY()*scale);
+		}
 	}
 
 	private GCompound playingField = new GCompound();
 	/**
 	 * Draw entities
 	 */
+	private int n = 0;
 	private void redrawAll() {
-		entities.clear();
-		GCompound oldField = playingField;
-		playingField = new GCompound();
+			entities.clear();
+			GCompound oldField = playingField;
+			playingField = new GCompound();
 
-		for (int i = 0; i < state.getEntityList().size(); i += 1) {
-			addEntity(state.getEntityList().get(i));
-		}
+			for (int i = 0; i < state.getEntityList().size(); i += 1) {
+				addEntity(state.getEntityList().get(i));
+			}
 
-		fieldOffsetX = ( getWidth() - state.getWidth() * scale )/2;
-		fieldOffsetY = ( getHeight() - state.getHeight() * scale )/2;
+			fieldOffsetX = ( getWidth() - state.getWidth() * scale )/2;
+			fieldOffsetY = ( getHeight() - state.getHeight() * scale )/2;
 
-		playingField.setLocation(fieldOffsetX, fieldOffsetY);
+			playingField.setLocation(fieldOffsetX, fieldOffsetY);
 
-		add(playingField);
-		remove(oldField);
+			removeAll();
+			add(playingField);
+
+			drawBackground();
 	}
 
 	/**
@@ -180,15 +184,16 @@ public class View extends GraphicsProgram implements Observer {
 			double arcStart = Math.toDegrees((Math.PI - paddle.getAngle())/2);
 
 			GCompound paddleComp = new GCompound();
-			paddleComp.setLocation((paddle.getX() - paddle.getRadius() + paddle.getWidth()/2)*scale, paddle.getY()*scale);
+			paddleComp.setLocation(paddle.getX()*scale, paddle.getY()*scale);
 
-			GArc paddleArc = new GArc(0, 0, paddle.getRadius()*2*scale, paddle.getRadius()*2*scale,
+			GArc paddleArc = new GArc((-paddle.getRadius() + paddle.getWidth()/2 )*scale, 0,
+			                          paddle.getRadius()*2*scale, paddle.getRadius()*2*scale,
 			                          arcStart, Math.toDegrees(paddle.getAngle()));
 			paddleArc.setFilled(true);
 			paddleArc.setColor(objColor);
 
 			double hideOffset = paddle.getHeight()/2*scale;
-			GArc paddleHide = new GArc(hideOffset/2, hideOffset,
+			GArc paddleHide = new GArc(( -paddle.getRadius() + paddle.getWidth()/2 )*scale + hideOffset/2, hideOffset,
 			                           paddle.getRadius()*2*scale - hideOffset, paddle.getRadius()*2*scale - hideOffset,
 			                           arcStart, Math.toDegrees(paddle.getAngle()));
 			paddleHide.setColor(bgColor);
@@ -242,6 +247,7 @@ public class View extends GraphicsProgram implements Observer {
 		right.setColor(bgColor);
 		top.setColor(bgColor);
 		bottom.setColor(bgColor);
+		border.setColor(objColor);
 
 		buffer.add(left);
 		buffer.add(right);

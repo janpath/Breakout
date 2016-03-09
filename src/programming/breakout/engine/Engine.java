@@ -69,6 +69,8 @@ public class Engine implements Runnable {
 
 	public Engine(GameState state) {
 		this.state = state;
+		state.setHeight(PLAYING_FIELD_HEIGHT);
+		state.setWidth(PLAYING_FIELD_WIDTH);
 		this.paddle = createPaddle();
 		this.bricks = createBricks();
 		this.ball = createBall();
@@ -77,26 +79,24 @@ public class Engine implements Runnable {
 	@Override
 	public void run() {
 
-		setGameState();
+		while (true) {
+			setGameState();
+			while (isRunning()) {
+				long start = System.currentTimeMillis();
+				moveBall();
+				handleCollisions();
+				state.endTick();
 
-		while (isRunning()) {
-			long start = System.currentTimeMillis();
-			moveBall();
-			handleCollisions();
-			state.endTick();
+				long elapsed = start - System.currentTimeMillis();
 
-			long elapsed = start - System.currentTimeMillis();
-
-			try {
-				Thread.sleep(REFRESH_RATE - elapsed);
-			} catch (InterruptedException ex) {
+				try {
+					Thread.sleep(REFRESH_RATE - elapsed);
+				} catch (InterruptedException ex) {
+				}
 			}
+
+			this.ball = createBall();
 		}
-
-		this.ball = createBall();
-		run();
-		state.setGameOver(true);
-
 	}
 
 	/**
@@ -106,6 +106,7 @@ public class Engine implements Runnable {
 		do {
 			Vector2D newPosition = ball.getPosition().add(ball.getVelocity());
 			ball.setPosition(newPosition);
+			state.addMoved(ball);
 		} while (noCollisionPossible());
 	}
 
@@ -372,9 +373,8 @@ public class Engine implements Runnable {
 	 * initializes the GameState
 	 */
 	private void setGameState() {
-		state.setHeight(PLAYING_FIELD_HEIGHT);
-		state.setWidth(PLAYING_FIELD_WIDTH);
 		ArrayList<Entity> list = state.getEntityList();
+		list.clear();
 		list.addAll(bricks);
 		list.add(ball);
 		list.add(paddle);
