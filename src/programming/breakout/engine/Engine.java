@@ -28,9 +28,9 @@ public class Engine implements Runnable {
 	 * Paddle
 	 */
 	private Rectangle paddle;
-	private double paddleLength = 0.2 * state.getWidth();
-	private double paddleHeight = 0.1 * paddleLength;
-	private double paddleParabolaFactor = 0.01;
+	private double paddleLength;
+	private double paddleHeight;
+	private double paddleParabolaFactor;
 
 	/**
 	 * Bricks
@@ -44,7 +44,7 @@ public class Engine implements Runnable {
 	/**
 	 * Ball
 	 */
-	private static final Vector2D START_POS = new Vector2D(state.getWidth() / 2, state.getHeight() / 2);
+	private final Vector2D start_pos;
 	private static final double RADIUS = 2;
 	/* Velocity in units per frame */
 	private Vector2D velocity = new Vector2D(1.0, 0.0);
@@ -60,6 +60,12 @@ public class Engine implements Runnable {
 	public Engine(GameState state) {
 		state.setWidth(80);
 		state.setHeight(130);
+
+		paddleLength = 0.2 * state.getWidth();
+		paddleHeight = 0.1 * paddleLength;
+		paddleParabolaFactor = 0.01;
+
+		start_pos = new Vector2D(state.getWidth() / 2, state.getHeight() / 2);
 
 		this.state = state;
 		this.paddle = createPaddle();
@@ -336,7 +342,7 @@ public class Engine implements Runnable {
 	 * creates the ball
 	 */
 	private Ball createBall() {
-		Ball ball = new Ball(START_POS, RADIUS);
+		Ball ball = new Ball(start_pos, RADIUS);
 		ball.setVelocity(velocity);
 		return ball;
 	}

@@ -35,30 +35,32 @@ public class GameState extends Observable {
 	private boolean paused = false, gameOver = false;
 	private int score = 0;
 	private double width, height;
-	private String role;
+	private GameDelta delta;
 
 	/**
 	 * Contains information about what changed since last time
 	 */
 	public static class GameDelta {
-		public final ArrayList<Entity> entitiesDestroyed;
-		public final HashSet<Entity> entitiesMoved;
-		public final ArrayList<Pair<Entity, Entity>> entitiesCollided;
-		public final int scoreDelta;
-		public final boolean pausedToggled, gameEnded;
+		public ArrayList<Entity> entitiesDestroyed;
+		public ArrayList<Entity> entitiesAdded;
+		public HashSet<Entity> entitiesChanged;
+		public ArrayList<Pair<Entity, Entity>> entitiesCollided;
+		public int scoreDelta;
+		public boolean pausedToggled, gameOverToggled;
 
 		GameDelta(ArrayList<Entity> entitiesDestroyed,
-		          HashSet<Entity> entitiesMoved,
+		          ArrayList<Entity> entitiesAdded,
+		          HashSet<Entity> entitiesChanged,
 		          ArrayList<Pair<Entity, Entity>> entitiesCollided,
 		          int scoreDelta,
 		          boolean pausedToggled,
-		          boolean gameEnded) {
+		          boolean gameOverToggled) {
 			this.entitiesDestroyed = entitiesDestroyed;
-			this.entitiesMoved = entitiesMoved;
+			this.entitiesChanged = entitiesChanged;
 			this.entitiesCollided = entitiesCollided;
 			this.scoreDelta = scoreDelta;
 			this.pausedToggled = pausedToggled;
-			this.gameEnded = gameEnded;
+			this.gameOverToggled = gameOverToggled;
 		}
 
 		/**
@@ -69,9 +71,13 @@ public class GameState extends Observable {
 			entitiesDestroyed.addAll(this.entitiesDestroyed);
 			entitiesDestroyed.addAll(other.entitiesDestroyed);
 
-			HashSet<Entity> entitiesMoved = new HashSet<Entity>();
-			entitiesMoved.addAll(this.entitiesMoved);
-			entitiesMoved.addAll(other.entitiesMoved);
+			ArrayList<Entity> entitiesAdded = new ArrayList<Entity>();
+			entitiesAdded.addAll(this.entitiesAdded);
+			entitiesAdded.addAll(other.entitiesAdded);
+
+			HashSet<Entity> entitiesChanged = new HashSet<Entity>();
+			entitiesChanged.addAll(this.entitiesChanged);
+			entitiesChanged.addAll(other.entitiesChanged);
 
 			ArrayList<Pair<Entity, Entity>> entitiesCollided = new ArrayList<Pair<Entity, Entity>>();
 			entitiesCollided.addAll(this.entitiesCollided);
@@ -79,19 +85,41 @@ public class GameState extends Observable {
 
 			int scoreDelta = this.scoreDelta + other.scoreDelta;
 			boolean pausedToggled = this.pausedToggled ^ other.pausedToggled;
-			boolean gameEnded = this.gameEnded || other.gameEnded;
+			boolean gameOverToggled = this.gameOverToggled ^ other.gameOverToggled;
 
 			return new GameDelta(entitiesDestroyed,
-			                     entitiesMoved,
+			                     entitiesAdded,
+			                     entitiesChanged,
 			                     entitiesCollided,
 			                     scoreDelta,
 			                     pausedToggled,
-			                     gameEnded);
+			                     gameOverToggled);
 		}
 	}
 
 	protected void setChanged() {
 		super.setChanged();
+	}
+
+	protected void addChanged(Entity e) {
+		delta.entitiesChanged.add(e);
+		setChanged();
+	}
+
+	protected void add(Entity e) {
+		entities.add(e);
+		delta.entitiesAdded.add(e);
+		setChanged();
+	}
+
+	protected void remove(Entity e) {
+		entities.remove(e);
+		delta.entitiesDestroyed.add(e);
+		setChanged();
+	}
+
+	void endTick() {
+		notifyObservers();
 	}
 
 	/**
@@ -115,6 +143,11 @@ public class GameState extends Observable {
 	 * @param paused {@code true} will pause the game, {@code false} unpause it.
 	 */
 	public void setPaused(boolean paused) {
+		if (this.paused != paused) {
+			delta.pausedToggled = !delta.pausedToggled;
+			setChanged();
+		}
+
 		this.paused = paused;
 	}
 
@@ -129,7 +162,9 @@ public class GameState extends Observable {
 	 * @param score the score to set
 	 */
 	public void setScore(int score) {
+		delta.scoreDelta += score - this.score;
 		this.score = score;
+		setChanged();
 	}
 
 	/**
@@ -143,6 +178,11 @@ public class GameState extends Observable {
 	 * @param gameOver the gameOver to set
 	 */
 	void setGameOver(boolean gameOver) {
+		if (this.gameOver != gameOver) {
+			delta.gameOverToggled = !delta.gameOverToggled;
+			setChanged();
+		}
+
 		this.gameOver = gameOver;
 	}
 
@@ -172,19 +212,5 @@ public class GameState extends Observable {
 	 */
 	void setHeight(double height) {
 		this.height = height;
-	}
-
-	/**
-	 * @return the role
-	 */
-	public String getRole() {
-		return role;
-	}
-
-	/**
-	 * @param role the role to set
-	 */
-	void setRole(String role) {
-		this.role = role;
 	}
 }
