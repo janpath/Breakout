@@ -56,6 +56,7 @@ public class View extends GraphicsProgram implements Observer {
 	private double scale;
 
 	private static final Color bgColor = Color.BLACK;
+	private static final Color objColor = Color.WHITE;
 
 	private double fieldOffsetX, fieldOffsetY;
 
@@ -169,6 +170,7 @@ public class View extends GraphicsProgram implements Observer {
 			                        ball.getRadius() * scale,
 			                        ball.getRadius() * scale);
 			gball.setFilled(true);
+			gball.setColor(objColor);
 			obj = gball;
 
 		} else if(entity instanceof Paddle) {
@@ -183,6 +185,7 @@ public class View extends GraphicsProgram implements Observer {
 			GArc paddleArc = new GArc(0, 0, paddle.getRadius()*2*scale, paddle.getRadius()*2*scale,
 			                          arcStart, Math.toDegrees(paddle.getAngle()));
 			paddleArc.setFilled(true);
+			paddleArc.setColor(objColor);
 
 			double hideOffset = paddle.getHeight()/2*scale;
 			GArc paddleHide = new GArc(hideOffset/2, hideOffset,
@@ -204,6 +207,7 @@ public class View extends GraphicsProgram implements Observer {
 			                        rect.getWidth() * scale,
 			                        rect.getHeight() * scale);
 			grect.setFilled(true);
+			grect.setColor(objColor);
 			obj = grect;
 
 		}  else {
