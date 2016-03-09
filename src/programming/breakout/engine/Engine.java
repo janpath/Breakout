@@ -79,10 +79,10 @@ public class Engine implements Runnable {
 	public void run() {
 
 		setGameState();
-		
+
 		while (isRunning()) {
 			long start = System.currentTimeMillis();
-			moveBallIf();			
+			moveBall();
 
 			state.setChanged();
 			state.notifyObservers();
@@ -94,7 +94,7 @@ public class Engine implements Runnable {
 			} catch (InterruptedException ex) {
 			}
 		}
-		
+
 		this.ball = createBall();
 		run();
 		state.setGameOver(true);
@@ -102,58 +102,28 @@ public class Engine implements Runnable {
 	}
 
 	/**
-	 * this method moves the ball while adding the velocity to the position, if
-	 * no collision is possible
-	 */
-	private void moveBallIf() {
-
-		// the ball is far enough away from everything
-		if (noCollisionPossible()) {
-			moveBall();
-		}
-		// is a wall hit?
-		else if (whichWall() < 4) {
-			handleWallCollision();
-		}
-		// is a brick hit?
-		else if (whichBrick() != null) {
-			handleBrickCollision();
-		} 
-		// is the paddle hit?
-		else if (rectangleIsHit(paddle)) {
-			handlePaddleCollision();
-		}
-		// nothing is hit
-		else {
-			moveBall();
-		}
-	}
-
-	/**
 	 * this method moves the ball
 	 */
 	private void moveBall() {
-		while(noCollisionPossible()) {
-		Vector2D newPosition = ball.getPosition().add(ball.getVelocity());
-		ball.setPosition(newPosition);
-		}
+		do {
+			Vector2D newPosition = ball.getPosition().add(ball.getVelocity());
+			ball.setPosition(newPosition);
+		} while (noCollisionPossible());
+
 	}
-	
+
 	/**
 	 * checks whether the ball is inside a "save" part of the playing field
 	 */
-	private boolean noCollisionPossible() {				
-		if(				
-				ball.getY() + (3 * ball.getRadius()) > getLowestBrickY() &&
-				ball.getX() + (3 * ball.getRadius()) < PLAYING_FIELD_HEIGHT &&
-				ball.getX() - (2 * ball.getRadius()) > 0 &&
-				ball.getY() + (3 * ball.getRadius()) < paddle.getY())
-		{
+	private boolean noCollisionPossible() {
+		if (ball.getY() + (3 * ball.getRadius()) > getLowestBrickY()
+				&& ball.getX() + (3 * ball.getRadius()) < PLAYING_FIELD_HEIGHT
+				&& ball.getX() - (2 * ball.getRadius()) > 0 && ball.getY() + (3 * ball.getRadius()) < paddle.getY()) {
 			return true;
 		}
 		return false;
 	}
-	
+
 	/**
 	 * this method handles a possible collision with a wall. If no Wall is hit,
 	 * nothing happens
@@ -188,8 +158,8 @@ public class Engine implements Runnable {
 	}
 
 	/**
-	 * this method handles the collision with a rectangle, which is the paddle or
-	 * a brick.
+	 * this method handles the collision with a rectangle, which is the paddle
+	 * or a brick.
 	 * 
 	 * @param rect
 	 *            the rectangle that is hit.
@@ -236,34 +206,34 @@ public class Engine implements Runnable {
 	private void handlePaddleCollision() {
 
 		// a vector representing the point on the paddle where the ball hits
-		Vector2D paddlePoint = new Vector2D(paddle.getX() + ball.getX() + ball.getRadius(), paddle.getY());		
-		
+		Vector2D paddlePoint = new Vector2D(paddle.getX() + ball.getX() + ball.getRadius(), paddle.getY());
+
 		// the slope of the parabola
 		double paddleParabolaSlope = getParabolaY(paddlePoint.getX0()) / (2 * paddlePoint.getX0());
-		
+
 		Vector2D normalizedVector = new Vector2D(-1, paddleParabolaSlope);
-		
+
 		double dotProduct = normalizedVector.dotProduct(ball.getVelocity());
-		
+
 		Vector2D normalizedVectorScaled = new Vector2D(-1, paddleParabolaSlope);
-		
+
 		Vector2D mirroredVelocity = ball.getVelocity().sub(normalizedVectorScaled).sub(normalizedVectorScaled);
-		
+
 		ball.setVelocity(mirroredVelocity);
 		System.out.println("afga");
 	}
-	
+
 	private double getParabolaY(double x) {
 		x = getParabolaX(x);
 		return paddleParabolaFactor * x * x;
 	}
-	
+
 	private double getParabolaX(double x) {
 		double offset = paddle.getX() + paddle.getWidth();
 		offset = (x < PLAYING_FIELD_WIDTH) ? -offset : offset;
-		return offset + (paddle.getWidth() * x / PLAYING_FIELD_WIDTH) /2.0;
+		return offset + (paddle.getWidth() * x / PLAYING_FIELD_WIDTH) / 2.0;
 	}
-	
+
 	private boolean rectangleIsHit(Rectangle r) {
 		if (ball.getY() + (2 * ball.getRadius()) >= r.getY() && ball.getY() <= r.getY() + r.getHeight()) {
 			if (ball.getX() + (2 * ball.getRadius()) >= r.getX() && ball.getX() <= r.getX() + r.getWidth()) {
@@ -311,7 +281,6 @@ public class Engine implements Runnable {
 			return 4;
 		}
 	}
-
 
 	/**
 	 * returns the y coordinate of the lowest brick on the screen (the one with
@@ -387,7 +356,7 @@ public class Engine implements Runnable {
 		state.setGameOver(false);
 		state.setHeight(PLAYING_FIELD_HEIGHT);
 		state.setWidth(PLAYING_FIELD_WIDTH);
-		ArrayList<Entity> list = state.getEntityList();		
+		ArrayList<Entity> list = state.getEntityList();
 		list.addAll(bricks);
 		list.add(ball);
 		list.add(paddle);
