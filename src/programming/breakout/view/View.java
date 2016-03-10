@@ -244,7 +244,7 @@ public class View extends GraphicsProgram implements Observer {
 		GRect top = new GRect(0, 0, getWidth(), fieldOffsetY);
 		GRect bottom = new GRect(0, getHeight()-fieldOffsetY, getWidth(), fieldOffsetY);
 		GRect border = new GRect(fieldOffsetX, fieldOffsetY,
-		                         state.getWidth()*scale, state.getHeight()*scale);
+		                         state.getWidth()*scale - 1, state.getHeight()*scale - 1);
 
 		left.setFilled(true);
 		right.setFilled(true);
