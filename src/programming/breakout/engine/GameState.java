@@ -32,7 +32,7 @@ import programming.breakout.engine.Pair;
 public class GameState extends Observable {
 
 	private ArrayList<Entity> entities = new ArrayList<Entity>();
-	private boolean paused = false, gameOver = false;
+	private boolean paused = true, gameOver = false;
 	private int score = 0;
 	private double width, height;
 	private GameDelta delta = new GameDelta();
@@ -165,6 +165,7 @@ public class GameState extends Observable {
 		}
 
 		this.paused = paused;
+		endTick();
 	}
 
 	/**

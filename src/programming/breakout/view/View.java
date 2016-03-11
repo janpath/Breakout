@@ -25,6 +25,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
+import java.awt.Font;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ import acm.graphics.GObject;
 import acm.graphics.GOval;
 import acm.graphics.GRect;
 import acm.graphics.GArc;
+import acm.graphics.GLabel;
 import acm.program.GraphicsProgram;
 
 import programming.breakout.engine.Ball;
@@ -109,6 +111,9 @@ public class View extends GraphicsProgram implements Observer {
 	private ArrayList<Particle> particles = new ArrayList<Particle>();
 	private GCompound playingField = new GCompound();
 	private GCompound background = new GCompound();
+	private GCompound shadowComp = new GCompound();
+	private GCompound instructions = new GCompound();
+	private HashMap<Ball, Vector2D> lastLocations = new HashMap<Ball, Vector2D>();
 
 	public View(GameState state) {
 		this.state = state;
@@ -123,6 +128,7 @@ public class View extends GraphicsProgram implements Observer {
 		setBackground(bgColor);
 		rescale();
 		redrawAll();
+		initInstructions();
 
 		// Resize things when window is resized
 		addComponentListener(new ComponentAdapter() {
@@ -133,10 +139,31 @@ public class View extends GraphicsProgram implements Observer {
 	}
 
 	/**
+	 * Initialize instructions compound
+	 */
+	private void initInstructions() {
+		GCompound instructions = new GCompound();
+		GLabel pause = new GLabel("SPACE to (un)pause");
+		GLabel speed = new GLabel("SHIFT to slow down, CTRL to speed up");
+		pause.setFont(new Font(GLabel.DEFAULT_FONT.getFontName(), GLabel.DEFAULT_FONT.getStyle(), 50));
+		// speed.setFont(GLabel.DEFAULT_FONT.deriveFont(20));
+		pause.setColor(objColor);
+		speed.setColor(objColor);
+		instructions.add(pause, (getWidth() - pause.getWidth())/2,
+		                 (getHeight()*1.3 + pause.getAscent())/2);
+		instructions.add(speed, (getWidth() - speed.getWidth())/2,
+		                 (getHeight()*1.3 + pause.getAscent())/2 + speed.getHeight() + pause.getDescent());
+		instructions.setVisible(state.isPaused());
+		remove(this.instructions);
+		add(instructions);
+		this.instructions = instructions;
+	}
+
+	/**
 	 * Redraw everything
 	 */
 	private void rescale() {
-		double oldscale = scale;
+		double oldScale = scale;
 		scale = Math.min(getWidth()/state.getWidth(),
 		                 getHeight()/state.getHeight());
 
@@ -144,14 +171,17 @@ public class View extends GraphicsProgram implements Observer {
 		fieldOffsetY = ( getHeight() - state.getHeight() * scale )/2;
 
 
-		particlesComp.scale(scale/oldscale);
+		particlesComp.scale(scale/oldScale);
 		particlesComp.setLocation(fieldOffsetX, fieldOffsetY);
 
-		playingField.scale(scale/oldscale);
+		playingField.scale(scale/oldScale);
 		playingField.setLocation(fieldOffsetX, fieldOffsetY);
 
-		shadowComp.scale(scale/oldscale);
+		shadowComp.scale(scale/oldScale);
 		shadowComp.setLocation(fieldOffsetX, fieldOffsetY);
+
+		initInstructions();
+
 		drawBackground();
 	}
 
@@ -195,8 +225,6 @@ public class View extends GraphicsProgram implements Observer {
 		}
 	}
 
-	private GCompound shadowComp = new GCompound();
-	private HashMap<Ball, Vector2D> lastLocations = new HashMap<Ball, Vector2D>();
 	/**
 	 * Make a fancy trail for balls
 	 */
@@ -214,6 +242,7 @@ public class View extends GraphicsProgram implements Observer {
 	}
 
 	private void fadeShadows() {
+		ArrayList<GOval> toBeRemoved = new ArrayList<GOval>();
 		shadowComp.iterator()
 			.forEachRemaining(obj -> {
 					if(obj instanceof GOval) {
@@ -223,7 +252,7 @@ public class View extends GraphicsProgram implements Observer {
 						oval.scale(1 - state.getTimeFactor() + SHADOW_FADE*state.getTimeFactor());
 
 						if(oval.getHeight() < 1) {
-							// shadowComp.remove(oval);
+							toBeRemoved.add(oval);
 						} else {
 							Color prevColor = oval.getColor();
 							oval.setColor(new Color(prevColor.getRed(),
@@ -233,6 +262,7 @@ public class View extends GraphicsProgram implements Observer {
 						}
 					}
 				});
+		toBeRemoved.forEach(oval -> shadowComp.remove(oval));
 	}
 
 	/**
@@ -292,6 +322,7 @@ public class View extends GraphicsProgram implements Observer {
 		add(playingField);
 		add(particlesComp);
 		drawBackground();
+		initInstructions();
 	}
 
 	/**
@@ -425,12 +456,28 @@ public class View extends GraphicsProgram implements Observer {
 		}
 
 		if (!state.isPaused()) {
-			particles.stream().forEach(Particle::tick);
+			ArrayList<Particle> toBeRemoved = new ArrayList<Particle>();
+
+			particles.stream().peek(Particle::tick)
+				.forEach(particle -> {
+						if(particle.shape.getY() > getHeight()) {
+							toBeRemoved.add(particle);
+						}
+					});
+
+			//Remove particles that are out of the window
+			toBeRemoved.forEach(particle -> {
+					particles.remove(particle);
+					particlesComp.remove(particle.shape);
+				});
 			fadeShadows();
 		}
 	}
 
 	private void processDelta(GameDelta delta) {
+		if(delta.pausedToggled) {
+			instructions.setVisible(state.isPaused());
+		}
 		for(Entity entity : delta.entitiesMoved) {
 			updateMoved(entity);
 		}

@@ -21,10 +21,12 @@
 package programming.breakout.engine;
 
 import java.awt.event.KeyEvent;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseListener;
+import java.awt.event.FocusListener;
 import java.awt.Component;
 import java.awt.Robot;
 import java.awt.AWTException;
@@ -35,7 +37,7 @@ import java.awt.Point;
 
 import programming.breakout.engine.Vector2D;
 
-public class Controller implements MouseListener, MouseMotionListener, KeyListener {
+public class Controller implements MouseListener, MouseMotionListener, KeyListener, FocusListener {
 	private GameState state;
 	private Entity controlledObject;
 	private boolean freeX, freeY;
@@ -68,6 +70,7 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 		component.addKeyListener(this);
 		component.addMouseListener(this);
 		component.addMouseMotionListener(this);
+		component.addFocusListener(this);
 
 		//Create Robot for mouse catching
 		try {
@@ -82,12 +85,20 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 		setCursor();
 	}
 
+	@Override
+	public void focusGained(FocusEvent e) {}
+
+	@Override
+	public void focusLost(FocusEvent e) {
+		state.setPaused(true);
+	}
+
 	/**
 	 * Move controlled object and keep mouse in window
 	 */
 	@Override
 	public void mouseMoved(MouseEvent event) {
-		if(state.isPaused()) {
+		if(state.isPaused() || !component.hasFocus()) {
 			return;
 		}
 
@@ -147,79 +158,79 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	@Override
 	public void mousePressed(MouseEvent ev) {}
 
-		@Override
-			public void mouseReleased(MouseEvent ev) {}
+	@Override
+	public void mouseReleased(MouseEvent ev) {}
 
-		@Override
-			public void keyTyped(KeyEvent event) {
-			// (Un)pause game with space
-			if(event.getKeyChar() == ' ') {
-				state.setPaused(!state.isPaused());
-				setCursor();
-				alignMouse();
-			}
-		}
-
-		@Override
-			public void keyReleased(KeyEvent event) {
-			if(event.getKeyCode() == KeyEvent.VK_SHIFT ||
-			   event.getKeyCode() == KeyEvent.VK_CONTROL) {
-				state.setTimeFactor(1);
-			}
-		}
-
-		@Override
-			public void keyPressed(KeyEvent event) {
-			if(event.getKeyCode() == KeyEvent.VK_SHIFT) {
-				state.setTimeFactor(.2);
-			} else if(event.getKeyCode() == KeyEvent.VK_CONTROL) {
-				state.setTimeFactor(2);
-			}
-		}
-
-		/**
-		 * Test if the controlled object is still inside the playing field
-		 */
-		private boolean isInField() {
-			Rectangle bounds = controlledObject.getBounds();
-			return
-				bounds.getX() >= 0 && bounds.getY() >= 0 &&
-				bounds.getX() + bounds.getWidth() <= state.getWidth() &&
-				bounds.getY() + bounds.getHeight() <= state.getHeight();
-		}
-
-		/**
-		 * Align mouse so that it doesn't move out of the window
-		 */
-		private void alignMouse() {
-			if(state.isPaused() || state.isGameOver()) {
-				return;
-			}
-
-			robot.mouseMove((int) (component.getLocationOnScreen().getX()
-			                       + component.getWidth()/2),
-			                (int) (component.getLocationOnScreen().getY()
-			                       + component.getHeight()/2));
-		}
-
-		/**
-		 * Make cursor transparent if game is not paused, revert to default cursor if game is paused.
-		 */
-		private void setCursor() {
-			component.setCursor(state.isPaused() || state.isGameOver() ? Cursor.getDefaultCursor() : blankCursor);
-		}
-
-		/**
-		 * Get the object controlled by this controller
-		 */
-		public Entity getControlledObject() {
-			return controlledObject;
-		}
-
-		/**
-		 * Set the controlled object
-		 */
-		public void setControlledObject(Entity controlledObject) {
-			this.controlledObject = controlledObject;
+	@Override
+	public void keyTyped(KeyEvent event) {
+		// (Un)pause game with space
+		if(event.getKeyChar() == ' ') {
+			state.setPaused(!state.isPaused());
+			setCursor();
+			alignMouse();
 		}
 	}
+
+	@Override
+	public void keyReleased(KeyEvent event) {
+		if(event.getKeyCode() == KeyEvent.VK_SHIFT ||
+		   event.getKeyCode() == KeyEvent.VK_CONTROL) {
+			state.setTimeFactor(1);
+		}
+	}
+
+	@Override
+	public void keyPressed(KeyEvent event) {
+		if(event.getKeyCode() == KeyEvent.VK_SHIFT) {
+			state.setTimeFactor(.2);
+		} else if(event.getKeyCode() == KeyEvent.VK_CONTROL) {
+			state.setTimeFactor(2);
+		}
+	}
+
+	/**
+	 * Test if the controlled object is still inside the playing field
+	 */
+	private boolean isInField() {
+		Rectangle bounds = controlledObject.getBounds();
+		return
+			bounds.getX() >= 0 && bounds.getY() >= 0 &&
+			bounds.getX() + bounds.getWidth() <= state.getWidth() &&
+			bounds.getY() + bounds.getHeight() <= state.getHeight();
+	}
+
+	/**
+	 * Align mouse so that it doesn't move out of the window
+	 */
+	private void alignMouse() {
+		if(state.isPaused() || state.isGameOver()) {
+			return;
+		}
+
+		robot.mouseMove((int) (component.getLocationOnScreen().getX()
+		                       + component.getWidth()/2),
+		                (int) (component.getLocationOnScreen().getY()
+		                       + component.getHeight()/2));
+	}
+
+	/**
+	 * Make cursor transparent if game is not paused, revert to default cursor if game is paused.
+	 */
+	private void setCursor() {
+		component.setCursor(state.isPaused() || state.isGameOver() ? Cursor.getDefaultCursor() : blankCursor);
+	}
+
+	/**
+	 * Get the object controlled by this controller
+	 */
+	public Entity getControlledObject() {
+		return controlledObject;
+	}
+
+	/**
+	 * Set the controlled object
+	 */
+	public void setControlledObject(Entity controlledObject) {
+		this.controlledObject = controlledObject;
+	}
+}

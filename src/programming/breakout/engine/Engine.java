@@ -81,6 +81,16 @@ public class Engine implements Runnable {
 			paddle.setPosition(new Vector2D(( state.getWidth()-paddle.getWidth() )/2, state.getHeight() - paddle.getHeight()*2));
 			setGameState();
 
+			for(int i=0; i < 1000; i += 20) {
+				try {
+					Thread.sleep(20);
+				} catch (InterruptedException ex) {
+				}
+				state.endTick();
+			}
+
+
+
 			while (isRunning()) {
 				long start = System.currentTimeMillis();
 				if (!state.isPaused()) {
