@@ -151,7 +151,7 @@ public class GameState extends Observable {
 	 * @return {@code true} if the game is paused, {@false} if it is running
 	 */
 	public boolean isPaused() {
-		return paused;
+		return paused || gameOver;
 	}
 
 	/**
@@ -159,13 +159,18 @@ public class GameState extends Observable {
 	 * @param paused {@code true} will pause the game, {@code false} unpause it.
 	 */
 	public void setPaused(boolean paused) {
-		if (this.paused != paused) {
-			delta.pausedToggled = !delta.pausedToggled;
-			setChanged();
+		if (this.paused == paused) {
+			return;
 		}
 
+		delta.pausedToggled = !delta.pausedToggled;
+		setChanged();
+
 		this.paused = paused;
-		endTick();
+
+		if (paused && !gameOver) {
+			endTick();
+		}
 	}
 
 	/**
@@ -195,12 +200,18 @@ public class GameState extends Observable {
 	 * @param gameOver the gameOver to set
 	 */
 	void setGameOver(boolean gameOver) {
-		if (this.gameOver != gameOver) {
-			delta.gameOverToggled = !delta.gameOverToggled;
-			setChanged();
+		if (this.gameOver == gameOver) {
+			return;
 		}
 
+		delta.gameOverToggled = !delta.gameOverToggled;
+		setChanged();
+
 		this.gameOver = gameOver;
+
+		if(gameOver) {
+			endTick();
+		}
 	}
 
 	/**

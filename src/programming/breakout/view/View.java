@@ -113,6 +113,7 @@ public class View extends GraphicsProgram implements Observer {
 	private GCompound background = new GCompound();
 	private GCompound shadowComp = new GCompound();
 	private GCompound instructions = new GCompound();
+	private GCompound gameOver = new GCompound();
 	private HashMap<Ball, Vector2D> lastLocations = new HashMap<Ball, Vector2D>();
 
 	public View(GameState state) {
@@ -128,7 +129,8 @@ public class View extends GraphicsProgram implements Observer {
 		setBackground(bgColor);
 		rescale();
 		redrawAll();
-		initInstructions();
+		drawInstructions();
+		drawGameOver();
 
 		// Resize things when window is resized
 		addComponentListener(new ComponentAdapter() {
@@ -141,22 +143,46 @@ public class View extends GraphicsProgram implements Observer {
 	/**
 	 * Initialize instructions compound
 	 */
-	private void initInstructions() {
+	private void drawInstructions() {
 		GCompound instructions = new GCompound();
 		GLabel pause = new GLabel("SPACE to (un)pause");
 		GLabel speed = new GLabel("SHIFT to slow down, CTRL to speed up");
-		pause.setFont(new Font(GLabel.DEFAULT_FONT.getFontName(), GLabel.DEFAULT_FONT.getStyle(), 50));
+		pause.setFont(new Font(GLabel.DEFAULT_FONT.getFontName(),
+		                       GLabel.DEFAULT_FONT.getStyle(), 50));
 		// speed.setFont(GLabel.DEFAULT_FONT.deriveFont(20));
 		pause.setColor(objColor);
 		speed.setColor(objColor);
 		instructions.add(pause, (getWidth() - pause.getWidth())/2,
 		                 (getHeight()*1.3 + pause.getAscent())/2);
 		instructions.add(speed, (getWidth() - speed.getWidth())/2,
-		                 (getHeight()*1.3 + pause.getAscent())/2 + speed.getHeight() + pause.getDescent());
-		instructions.setVisible(state.isPaused());
+		                 (getHeight()*1.3 + pause.getAscent())/2
+		                 + speed.getHeight() + pause.getDescent());
+		instructions.setVisible(state.isPaused() && !state.isGameOver());
 		remove(this.instructions);
 		add(instructions);
 		this.instructions = instructions;
+	}
+
+	/**
+	 * Initialize instructions compound
+	 */
+	private void drawGameOver() {
+		GCompound gameOver= new GCompound();
+		GLabel gameOverLabel = new GLabel("Game Over");
+		GLabel explanation = new GLabel("You ran out of bricks!");
+		gameOverLabel.setFont(new Font(GLabel.DEFAULT_FONT.getFontName(),
+		                               GLabel.DEFAULT_FONT.getStyle(), 50));
+		gameOverLabel.setColor(objColor);
+		explanation.setColor(objColor);
+		gameOver.add(gameOverLabel, (getWidth() - gameOverLabel.getWidth())/2,
+		             (getHeight()*1.3 + gameOverLabel.getAscent())/2);
+		gameOver.add(explanation, (getWidth() - explanation.getWidth())/2,
+		             (getHeight()*1.3 + gameOverLabel.getAscent())/2
+		             + explanation.getHeight() + gameOverLabel.getDescent());
+		gameOver.setVisible(state.isGameOver());
+		remove(this.gameOver);
+		add(gameOver);
+		this.gameOver= gameOver;
 	}
 
 	/**
@@ -170,7 +196,6 @@ public class View extends GraphicsProgram implements Observer {
 		fieldOffsetX = ( getWidth() - state.getWidth() * scale )/2;
 		fieldOffsetY = ( getHeight() - state.getHeight() * scale )/2;
 
-
 		particlesComp.scale(scale/oldScale);
 		particlesComp.setLocation(fieldOffsetX, fieldOffsetY);
 
@@ -180,9 +205,10 @@ public class View extends GraphicsProgram implements Observer {
 		shadowComp.scale(scale/oldScale);
 		shadowComp.setLocation(fieldOffsetX, fieldOffsetY);
 
-		initInstructions();
-
 		drawBackground();
+
+		drawInstructions();
+		drawGameOver();
 	}
 
 	ArrayDeque<GameDelta> deltas = new ArrayDeque<GameDelta>();
@@ -322,7 +348,9 @@ public class View extends GraphicsProgram implements Observer {
 		add(playingField);
 		add(particlesComp);
 		drawBackground();
-		initInstructions();
+
+		drawInstructions();
+		drawGameOver();
 	}
 
 	/**
@@ -476,8 +504,14 @@ public class View extends GraphicsProgram implements Observer {
 
 	private void processDelta(GameDelta delta) {
 		if(delta.pausedToggled) {
-			instructions.setVisible(state.isPaused());
+			instructions.setVisible(state.isPaused() && !state.isGameOver());
 		}
+
+		if (delta.gameOverToggled && state.isGameOver()) {
+			instructions.setVisible(false);
+			gameOver.setVisible(true);
+		}
+
 		for(Entity entity : delta.entitiesMoved) {
 			updateMoved(entity);
 		}
