@@ -37,6 +37,8 @@ public class GameState extends Observable {
 	private double width, height;
 	private GameDelta delta = new GameDelta();
 	private double timeFactor = 1;
+	private Controller controller;
+	private Engine engine;
 
 	/**
 	 * Contains information about what changed since last time
@@ -237,5 +239,33 @@ public class GameState extends Observable {
 
 	void setTimeFactor(double timeFactor) {
 		this.timeFactor = timeFactor;
+	}
+
+	/**
+	 * Get Controller
+	 */
+	public Controller getController() {
+		return controller;
+	}
+
+	/**
+	 * Set Controller
+	 */
+	void setController(Controller controller) {
+		this.controller = controller;
+	}
+
+	/**
+	 * Get Engine
+	 */
+	public Engine getEngine() {
+		return engine;
+	}
+
+	/**
+	 * Set Engine
+	 */
+	void setEngine(Engine engine) {
+		this.engine = engine;
 	}
 }

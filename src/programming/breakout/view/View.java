@@ -86,14 +86,14 @@ public class View extends GraphicsProgram implements Observer {
 
 	private static final Color bgColor = Color.BLACK;
 	private static final Color objColor = Color.WHITE;
-	private static final int PARTICLE_MIN_COUNT = 20;
-	private static final int PARTICLE_MAX_COUNT = 25;
-	private static final double PARTICLE_SPEED = 3;
+	private static final int PARTICLE_MIN_COUNT = 50;
+	private static final int PARTICLE_MAX_COUNT = 65;
+	private static final double PARTICLE_SPEED = 2;
 	private static final double PARTICLE_TORQUE = Math.PI/10;
 	private static final double PARTICLE_MIN_VERTICES = 3;
 	private static final double PARTICLE_MAX_VERTICES = 5;
-	private static final double PARTICLE_MIN_SIZE = .5;
-	private static final double PARTICLE_MAX_SIZE = 1;
+	private static final double PARTICLE_MIN_SIZE = .2;
+	private static final double PARTICLE_MAX_SIZE = .5;
 	private static final Vector2D PARTICLE_GRAVITY = new Vector2D(0, .3);
 
 	private static final int REFRESH_RATE = 20;
@@ -162,7 +162,8 @@ public class View extends GraphicsProgram implements Observer {
 	private void removeEntity(Entity entity) {
 		playingField.remove(entities.get(entity));
 		spawnParticles(entity.getBounds(),
-		               (int) Math.random()*(PARTICLE_MAX_COUNT - PARTICLE_MIN_COUNT) + PARTICLE_MIN_COUNT);
+		               (int) Math.random()*(PARTICLE_MAX_COUNT - PARTICLE_MIN_COUNT) + PARTICLE_MIN_COUNT,
+		               entity instanceof Paddle ? PARTICLE_SPEED*5 : PARTICLE_SPEED);
 		entities.remove(entity);
 	}
 
@@ -176,13 +177,13 @@ public class View extends GraphicsProgram implements Observer {
 	/**
 	 * Make fancy particles when something is destroyed.
 	 */
-	private void spawnParticles(Rectangle rect, int count) {
+	private void spawnParticles(Rectangle rect, int count, double speed) {
 		for (int i = 0; i < count; i += 1) {
 			Particle particle =
-				new Particle(new Vector2D(Math.random()*PARTICLE_SPEED*2 - PARTICLE_SPEED,
-				                          Math.random()*PARTICLE_SPEED*2 - PARTICLE_SPEED),
+				new Particle(new Vector2D(Math.random()*speed*2 - speed,
+				                          Math.random()*speed*2 - speed),
 				             PARTICLE_GRAVITY,
-				             Math.random()*PARTICLE_TORQUE,
+				             Math.random()*PARTICLE_TORQUE*2 - PARTICLE_TORQUE,
 				             getRandomPolygon(( Math.random()*rect.getWidth() + rect.getX() )*scale,
 				                              ( Math.random()*rect.getHeight() + rect.getY() )*scale,
 				                              ( Math.random()*(PARTICLE_MAX_SIZE - PARTICLE_MIN_SIZE)

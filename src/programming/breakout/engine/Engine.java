@@ -53,10 +53,10 @@ public class Engine implements Runnable {
 	/**
 	 * Ball
 	 */
-	private static final Vector2D START_POS = new Vector2D(PLAYING_FIELD_WIDTH / 2, PLAYING_FIELD_HEIGHT / 2);
 	private static final double RADIUS = 1;
+	private static final Vector2D START_POS = new Vector2D(PLAYING_FIELD_WIDTH/2 - RADIUS, PLAYING_FIELD_HEIGHT/2 - RADIUS);
 	/* Velocity in units per frame */
-	private Vector2D velocity = new Vector2D(0.0, -2);
+	private Vector2D velocity = new Vector2D(0.0, 2);
 	private Ball ball;
 
 	/**
@@ -68,6 +68,7 @@ public class Engine implements Runnable {
 
 	public Engine(GameState state) {
 		this.state = state;
+		state.setEngine(this);
 		state.setHeight(PLAYING_FIELD_HEIGHT);
 		state.setWidth(PLAYING_FIELD_WIDTH);
 		this.paddle = createPaddle();
@@ -77,6 +78,7 @@ public class Engine implements Runnable {
 	public void run() {
 
 		while (true) {
+			paddle.setPosition(new Vector2D(( state.getWidth()-paddle.getWidth() )/2, state.getHeight() - paddle.getHeight()*2));
 			setGameState();
 
 			while (isRunning()) {
@@ -93,6 +95,9 @@ public class Engine implements Runnable {
 				} catch (InterruptedException ex) {
 				}
 			}
+
+			state.remove(paddle);
+			state.endTick();
 
 			try {
 				Thread.sleep(2000);
@@ -360,7 +365,7 @@ public class Engine implements Runnable {
 	 * creates the paddle, which is a rectangle
 	 */
 	private Paddle createPaddle() {
-		Vector2D startingPosition = new Vector2D(state.getWidth() / 2, state.getHeight() - paddleHeight*2);
+		Vector2D startingPosition = new Vector2D((state.getWidth()-paddleLength)/2, state.getHeight() - paddleHeight*2);
 		return new Paddle(startingPosition, paddleLength, paddleHeight);
 	}
 
