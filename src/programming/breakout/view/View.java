@@ -179,8 +179,8 @@ public class View extends GraphicsProgram implements Observer {
 			Ball ball = (Ball) entity;
 			GOval gball = new GOval(ball.getX() * scale,
 			                        ball.getY() * scale,
-			                        ball.getRadius() * scale,
-			                        ball.getRadius() * scale);
+			                        2*ball.getRadius() * scale,
+			                        2*ball.getRadius() * scale);
 			gball.setFilled(true);
 			gball.setColor(objColor);
 			obj = gball;
@@ -245,7 +245,6 @@ public class View extends GraphicsProgram implements Observer {
 		GRect bottom = new GRect(0, getHeight()-fieldOffsetY, getWidth(), fieldOffsetY);
 		GRect border = new GRect(fieldOffsetX, fieldOffsetY,
 		                         state.getWidth()*scale - 1, state.getHeight()*scale - 1);
-
 		left.setFilled(true);
 		right.setFilled(true);
 		top.setFilled(true);

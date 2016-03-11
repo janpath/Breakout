@@ -155,11 +155,20 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	}
 
 	@Override
-	public void keyReleased(KeyEvent ev) {
+	public void keyReleased(KeyEvent event) {
+		if(event.getKeyCode() == KeyEvent.VK_SHIFT ||
+		   event.getKeyCode() == KeyEvent.VK_CONTROL) {
+			state.setTimeFactor(1);
+		}
 	}
 
 	@Override
 	public void keyPressed(KeyEvent event) {
+		if(event.getKeyCode() == KeyEvent.VK_SHIFT) {
+			state.setTimeFactor(.2);
+		} else if(event.getKeyCode() == KeyEvent.VK_CONTROL) {
+			state.setTimeFactor(2);
+		}
 	}
 
 	/**

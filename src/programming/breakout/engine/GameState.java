@@ -36,6 +36,7 @@ public class GameState extends Observable {
 	private int score = 0;
 	private double width, height;
 	private GameDelta delta = new GameDelta();
+	private double timeFactor = 1;
 
 	/**
 	 * Contains information about what changed since last time
@@ -225,5 +226,16 @@ public class GameState extends Observable {
 	 */
 	void setHeight(double height) {
 		this.height = height;
+	}
+
+	/**
+	 * @return get the current time factor.
+	 */
+	public double getTimeFactor() {
+		return timeFactor;
+	}
+
+	void setTimeFactor(double timeFactor) {
+		this.timeFactor = timeFactor;
 	}
 }

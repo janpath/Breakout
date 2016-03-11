@@ -92,4 +92,9 @@ public class Vector2D {
 	public Vector2D scale(double scale) {
 		return new Vector2D(getX0() * scale, getX1() * scale);
 	}
+
+	@Override
+	public String toString() {
+		return String.format("%s[%f, %f]", getClass(), getX0(), getX1());
+	}
 }
