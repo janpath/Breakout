@@ -93,6 +93,13 @@ public class Vector2D {
 		return new Vector2D(getX0() * scale, getX1() * scale);
 	}
 
+	public Vector2D rotate(double theta) {
+		Vector2D result = new Vector2D(Math.cos(theta)*getX0() - Math.sin(theta)*getX1(),
+		                               Math.sin(theta)*getX0() + Math.cos(theta)*getX1());
+		assert result.getLength() == getLength(): "Vector rotation should not change the length";
+		return result;
+	}
+
 	@Override
 	public String toString() {
 		return String.format("%s[%f, %f]", getClass(), getX0(), getX1());

@@ -74,7 +74,7 @@ public class View extends GraphicsProgram implements Observer {
 			shape.move(velocity.getX0()*state.getTimeFactor(),
 			           velocity.getX1()*state.getTimeFactor());
 			shape.rotate(Math.toDegrees(torque));
-			velocity = velocity.add(acceleration);
+			velocity = velocity.add(acceleration.scale(state.getTimeFactor()));
 		}
 	}
 
@@ -95,8 +95,8 @@ public class View extends GraphicsProgram implements Observer {
 	private static final double PARTICLE_TORQUE = Math.PI/10;
 	private static final double PARTICLE_MIN_VERTICES = 3;
 	private static final double PARTICLE_MAX_VERTICES = 5;
-	private static final double PARTICLE_MIN_SIZE = .2;
-	private static final double PARTICLE_MAX_SIZE = .5;
+	private static final double PARTICLE_MIN_SIZE = .5;
+	private static final double PARTICLE_MAX_SIZE = 1;
 	private static final Vector2D PARTICLE_GRAVITY = new Vector2D(0, .3);
 
 	private static final int REFRESH_RATE = 20;
@@ -143,7 +143,6 @@ public class View extends GraphicsProgram implements Observer {
 		fieldOffsetX = ( getWidth() - state.getWidth() * scale )/2;
 		fieldOffsetY = ( getHeight() - state.getHeight() * scale )/2;
 
-		drawBackground();
 
 		particlesComp.scale(scale/oldscale);
 		particlesComp.setLocation(fieldOffsetX, fieldOffsetY);
@@ -153,6 +152,7 @@ public class View extends GraphicsProgram implements Observer {
 
 		shadowComp.scale(scale/oldscale);
 		shadowComp.setLocation(fieldOffsetX, fieldOffsetY);
+		drawBackground();
 	}
 
 	ArrayDeque<GameDelta> deltas = new ArrayDeque<GameDelta>();
@@ -290,8 +290,8 @@ public class View extends GraphicsProgram implements Observer {
 		removeAll();
 		add(shadowComp);
 		add(playingField);
-		drawBackground();
 		add(particlesComp);
+		drawBackground();
 	}
 
 	/**

@@ -374,7 +374,7 @@ public class Engine implements Runnable {
 	 */
 	private Ball createBall() {
 		Ball ball = new Ball(START_POS, RADIUS);
-		ball.setVelocity(velocity);
+		ball.setVelocity(velocity.rotate(Math.random()*Math.PI/2 - Math.PI/4));
 		return ball;
 	}
 
