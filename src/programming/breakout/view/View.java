@@ -86,6 +86,9 @@ public class View extends GraphicsProgram implements Observer {
 
 	private static final Color bgColor = Color.BLACK;
 	private static final Color objColor = Color.WHITE;
+	private static final Color SHADOW_COLOR = Color.RED;
+	private static final double SHADOW_DELTA = 3;
+	private static final double SHADOW_FADE = .9;
 	private static final int PARTICLE_MIN_COUNT = 50;
 	private static final int PARTICLE_MAX_COUNT = 65;
 	private static final double PARTICLE_SPEED = 2;
@@ -118,6 +121,8 @@ public class View extends GraphicsProgram implements Observer {
 	@Override
 	public void init() {
 		setBackground(bgColor);
+		rescale();
+		redrawAll();
 
 		// Resize things when window is resized
 		addComponentListener(new ComponentAdapter() {
@@ -134,8 +139,20 @@ public class View extends GraphicsProgram implements Observer {
 		double oldscale = scale;
 		scale = Math.min(getWidth()/state.getWidth(),
 		                 getHeight()/state.getHeight());
+
+		fieldOffsetX = ( getWidth() - state.getWidth() * scale )/2;
+		fieldOffsetY = ( getHeight() - state.getHeight() * scale )/2;
+
+		drawBackground();
+
 		particlesComp.scale(scale/oldscale);
-		redrawAll();
+		particlesComp.setLocation(fieldOffsetX, fieldOffsetY);
+
+		playingField.scale(scale/oldscale);
+		playingField.setLocation(fieldOffsetX, fieldOffsetY);
+
+		shadowComp.scale(scale/oldscale);
+		shadowComp.setLocation(fieldOffsetX, fieldOffsetY);
 	}
 
 	ArrayDeque<GameDelta> deltas = new ArrayDeque<GameDelta>();
@@ -171,7 +188,51 @@ public class View extends GraphicsProgram implements Observer {
 		GObject obj = entities.get(entity);
 		if(obj != null) {
 			obj.setLocation(entity.getX()*scale, entity.getY()*scale);
+
+			if(entity instanceof Ball) {
+				createBallShadow((Ball) entity);
+			}
 		}
+	}
+
+	private GCompound shadowComp = new GCompound();
+	private HashMap<Ball, Vector2D> lastLocations = new HashMap<Ball, Vector2D>();
+	/**
+	 * Make a fancy trail for balls
+	 */
+	private void createBallShadow(Ball ball) {
+		Vector2D lastLocation = lastLocations.get(ball);
+		if(lastLocation == null ||
+		   lastLocation.sub(ball.getPosition()).getLength() > SHADOW_DELTA) {
+			lastLocations.put(ball, ball.getPosition());
+			GOval oval = new GOval(ball.getX()*scale, ball.getY()*scale,
+			                       ball.getRadius()*2*scale, ball.getRadius()*2*scale);
+			oval.setFilled(true);
+			oval.setColor(SHADOW_COLOR);
+			shadowComp.add(oval);
+		}
+	}
+
+	private void fadeShadows() {
+		shadowComp.iterator()
+			.forEachRemaining(obj -> {
+					if(obj instanceof GOval) {
+						GOval oval = (GOval) obj;
+						oval.move(oval.getWidth()*(1 - SHADOW_FADE )/2*state.getTimeFactor(),
+						          oval.getHeight()*(1 - SHADOW_FADE )/2*state.getTimeFactor());
+						oval.scale(1 - state.getTimeFactor() + SHADOW_FADE*state.getTimeFactor());
+
+						if(oval.getHeight() < 1) {
+							// shadowComp.remove(oval);
+						} else {
+							Color prevColor = oval.getColor();
+							oval.setColor(new Color(prevColor.getRed(),
+							                        prevColor.getGreen(),
+							                        prevColor.getBlue(),
+							                        (int) ( prevColor.getAlpha()*(1 - state.getTimeFactor() + SHADOW_FADE*state.getTimeFactor() ) )));
+						}
+					}
+				});
 	}
 
 	/**
@@ -224,18 +285,13 @@ public class View extends GraphicsProgram implements Observer {
 			addEntity(state.getEntityList().get(i));
 		}
 
-		fieldOffsetX = ( getWidth() - state.getWidth() * scale )/2;
-		fieldOffsetY = ( getHeight() - state.getHeight() * scale )/2;
-
 		playingField.setLocation(fieldOffsetX, fieldOffsetY);
 
 		removeAll();
+		add(shadowComp);
 		add(playingField);
-
-		particlesComp.setLocation(fieldOffsetX, fieldOffsetY);
-
-		add(particlesComp);
 		drawBackground();
+		add(particlesComp);
 	}
 
 	/**
@@ -370,6 +426,7 @@ public class View extends GraphicsProgram implements Observer {
 
 		if (!state.isPaused()) {
 			particles.stream().forEach(Particle::tick);
+			fadeShadows();
 		}
 	}
 
