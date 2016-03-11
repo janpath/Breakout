@@ -21,10 +21,8 @@
 package programming.breakout.view;
 
 import java.awt.Color;
-import java.awt.GraphicsConfiguration;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.MouseEvent;
 import java.awt.Font;
 import java.util.Observable;
 import java.util.Observer;
@@ -331,10 +329,8 @@ public class View extends GraphicsProgram implements Observer {
 	/**
 	 * Draw entities
 	 */
-	private int n = 0;
 	private void redrawAll() {
 		entities.clear();
-		GCompound oldField = playingField;
 		playingField = new GCompound();
 
 		for (int i = 0; i < state.getEntityList().size(); i += 1) {

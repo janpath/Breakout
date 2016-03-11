@@ -30,7 +30,8 @@ public class Main {
 		GameState game = new GameState();
 		Engine engine = new Engine(game);
 		View view = new View(game);
-		Controller controller = new Controller(game, engine.getPaddle(), true, false, view.getGCanvas());
+		new Controller(game, engine.getPaddle(),
+		               true, false, view.getGCanvas());
 
 		Thread engineThread = new Thread(engine);
 		engineThread.start();

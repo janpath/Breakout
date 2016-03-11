@@ -2,8 +2,6 @@ package programming.breakout.engine;
 
 public class Paddle extends Rectangle {
 
-	private Ball paddleArc;
-
 	public Paddle(Vector2D position, double width, double height) {
 		super(position, width, height);
 	}

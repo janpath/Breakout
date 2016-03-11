@@ -164,37 +164,6 @@ public class Engine implements Runnable {
 	}
 
 	/**
-	 * this method handles the collision with a rectangle, which is the paddle
-	 * or a brick.
-	 *
-	 * @param rect
-	 *            the rectangle that is hit.
-	 */
-	private void handleRectCollision(Rectangle rect) {
-
-		// a vector representing the center of the brick which is hit
-		Vector2D brickCenter = new Vector2D(rect.getX() + rect.getHeight() / 2, rect.getY() + rect.getWidth() / 2);
-		// a vector representing the center of the ball
-		Vector2D ballCenter = new Vector2D(ball.getX() + ball.getRadius(), ball.getY() + ball.getRadius());
-		// a vector which points from the ball to the brick
-		Vector2D referenceVector = ballCenter.add(brickCenter);
-
-		// get x and y values of the reference vector
-		double x = rect.getWidth() / 2 - referenceVector.getX0();
-		double y = rect.getHeight() / 2 - referenceVector.getX1();
-
-		double xVel = ball.getVelocity().getX0();
-		double yVel = ball.getVelocity().getX1();
-
-		// compare x and y to set velocity (direction)
-		if (x < y) {
-			ball.setVelocity(new Vector2D(-xVel, yVel));
-		} else {
-			ball.setVelocity(new Vector2D(xVel, -yVel));
-		}
-	}
-
-	/**
 	 * this method handles a possible collision with a brick
 	 */
 	private Vector2D getBrickCollison() {
@@ -318,29 +287,6 @@ public class Engine implements Runnable {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * checks which wall is hit and returns a number representing either top,
-	 * left , right, or no wall hit
-	 */
-	private int whichWall() {
-		// right
-		if (ball.getX() + (2 * ball.getRadius()) >= state.getWidth()) {
-			return 1;
-		}
-		// left
-		else if (ball.getX() <= 0) {
-			return 2;
-		}
-		// top
-		else if (ball.getY() <= 0) {
-			return 3;
-		}
-		// other
-		else {
-			return 4;
-		}
 	}
 
 	/**
