@@ -28,8 +28,11 @@ import java.awt.event.MouseEvent;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.HashMap;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 
 import acm.graphics.GCompound;
+import acm.graphics.GPolygon;
 import acm.graphics.GObject;
 import acm.graphics.GOval;
 import acm.graphics.GRect;
@@ -41,6 +44,7 @@ import programming.breakout.engine.Entity;
 import programming.breakout.engine.GameState;
 import programming.breakout.engine.Rectangle;
 import programming.breakout.engine.Paddle;
+import programming.breakout.engine.Vector2D;
 
 import static programming.breakout.engine.GameState.GameDelta;
 
@@ -49,6 +53,31 @@ import static programming.breakout.engine.GameState.GameDelta;
  */
 @SuppressWarnings("serial")
 public class View extends GraphicsProgram implements Observer {
+
+	private class Particle {
+		Vector2D velocity;
+		Vector2D acceleration;
+		double torque;
+		GPolygon shape;
+
+		Particle(Vector2D velocity,
+		         Vector2D acceleration,
+		         double torque,
+		         GPolygon shape) {
+			this.velocity = velocity;
+			this.acceleration = acceleration;
+			this.torque = torque;
+			this.shape = shape;
+		}
+
+		void tick() {
+			shape.move(velocity.getX0()*state.getTimeFactor(),
+			           velocity.getX1()*state.getTimeFactor());
+			shape.rotate(Math.toDegrees(torque));
+			velocity = velocity.add(acceleration);
+		}
+	}
+
 	/**
 	 * The game state
 	 */
@@ -57,10 +86,26 @@ public class View extends GraphicsProgram implements Observer {
 
 	private static final Color bgColor = Color.BLACK;
 	private static final Color objColor = Color.WHITE;
+	private static final int PARTICLE_MIN_COUNT = 20;
+	private static final int PARTICLE_MAX_COUNT = 25;
+	private static final double PARTICLE_SPEED = 3;
+	private static final double PARTICLE_TORQUE = Math.PI/10;
+	private static final double PARTICLE_MIN_VERTICES = 3;
+	private static final double PARTICLE_MAX_VERTICES = 5;
+	private static final double PARTICLE_MIN_SIZE = .5;
+	private static final double PARTICLE_MAX_SIZE = 1;
+	private static final Vector2D PARTICLE_GRAVITY = new Vector2D(0, .3);
+
+	private static final int REFRESH_RATE = 20;
 
 	private double fieldOffsetX, fieldOffsetY;
 
 	private HashMap<Entity, GObject> entities = new HashMap<Entity, GObject>();
+
+	private GCompound particlesComp = new GCompound();
+	private ArrayList<Particle> particles = new ArrayList<Particle>();
+	private GCompound playingField = new GCompound();
+	private GCompound background = new GCompound();
 
 	public View(GameState state) {
 		this.state = state;
@@ -86,34 +131,25 @@ public class View extends GraphicsProgram implements Observer {
 	 * Redraw everything
 	 */
 	private void rescale() {
+		double oldscale = scale;
 		scale = Math.min(getWidth()/state.getWidth(),
 		                 getHeight()/state.getHeight());
+		particlesComp.scale(scale/oldscale);
 		redrawAll();
 	}
 
+	ArrayDeque<GameDelta> deltas = new ArrayDeque<GameDelta>();
+	boolean needsRedraw = false;
 	/**
 	 * Update us when there is a new game state.
 	 */
 	@Override
 	public void update(Observable observable, Object arg) {
 		if(arg instanceof GameDelta) {
-			GameDelta delta = (GameDelta) arg;
-
-			for(Entity entity : delta.entitiesMoved) {
-				updateMoved(entity);
-			}
-
-			for(Entity entity : delta.entitiesDestroyed) {
-				removeEntity(entity);
-			}
-
-			for(Entity entity : delta. entitiesAdded) {
-				addEntity(entity);
-			}
-
+			deltas.add((GameDelta) arg);
 		}
-		else  {
-			redrawAll();
+		else {
+			needsRedraw = true;
 		}
 	}
 
@@ -125,7 +161,8 @@ public class View extends GraphicsProgram implements Observer {
 
 	private void removeEntity(Entity entity) {
 		playingField.remove(entities.get(entity));
-		// spawnParticles(entities.get(entity));
+		spawnParticles(entity.getBounds(),
+		               (int) Math.random()*(PARTICLE_MAX_COUNT - PARTICLE_MIN_COUNT) + PARTICLE_MIN_COUNT);
 		entities.remove(entity);
 	}
 
@@ -136,14 +173,43 @@ public class View extends GraphicsProgram implements Observer {
 		}
 	}
 
-	// /**
-	//  * Make fancy particles when something is destroyed.
-	//  */
-	// private void spawnParticles(GRectangle rect) {
+	/**
+	 * Make fancy particles when something is destroyed.
+	 */
+	private void spawnParticles(Rectangle rect, int count) {
+		for (int i = 0; i < count; i += 1) {
+			Particle particle =
+				new Particle(new Vector2D(Math.random()*PARTICLE_SPEED*2 - PARTICLE_SPEED,
+				                          Math.random()*PARTICLE_SPEED*2 - PARTICLE_SPEED),
+				             PARTICLE_GRAVITY,
+				             Math.random()*PARTICLE_TORQUE,
+				             getRandomPolygon(( Math.random()*rect.getWidth() + rect.getX() )*scale,
+				                              ( Math.random()*rect.getHeight() + rect.getY() )*scale,
+				                              ( Math.random()*(PARTICLE_MAX_SIZE - PARTICLE_MIN_SIZE)
+				                                + PARTICLE_MIN_SIZE ) * scale));
+			particles.add(particle);
+			particlesComp.add(particle.shape);
+		}
+	}
 
-	// }
+	GPolygon getRandomPolygon(double x, double y, double size) {
+		GPolygon poly = new GPolygon();
+		int vertices =
+			(int) ( Math.random()*( PARTICLE_MAX_VERTICES - PARTICLE_MIN_VERTICES)
+			        + PARTICLE_MIN_VERTICES );
 
-	private GCompound playingField = new GCompound();
+		for (int i = 0; i < vertices; i += 1) {
+			poly.addVertex(Math.random()*size, Math.random()*size);
+		}
+
+		poly.setFilled(true);
+		poly.setColor(objColor);
+		poly.recenter();
+		poly.setLocation(x, y);
+
+		return poly;
+	}
+
 	/**
 	 * Draw entities
 	 */
@@ -165,6 +231,9 @@ public class View extends GraphicsProgram implements Observer {
 		removeAll();
 		add(playingField);
 
+		particlesComp.setLocation(fieldOffsetX, fieldOffsetY);
+
+		add(particlesComp);
 		drawBackground();
 	}
 
@@ -231,7 +300,6 @@ public class View extends GraphicsProgram implements Observer {
 		return obj;
 	}
 
-	private GCompound background = new GCompound();
 	/**
 	 * Draw background
 	 */
@@ -268,5 +336,53 @@ public class View extends GraphicsProgram implements Observer {
 		add(buffer);
 		remove(background);
 		this.background = buffer;
+	}
+
+	@Override
+	public void run() {
+		while(true) {
+			long start = System.currentTimeMillis();
+
+			tick();
+
+			long elapsed = System.currentTimeMillis() - start;
+
+			try {
+				Thread.sleep(Math.max(0, REFRESH_RATE - elapsed ));
+			}
+			catch (InterruptedException ex) {
+			}
+		}
+	}
+
+	private void tick() {
+		ArrayDeque<GameDelta> deltasThisFrame = deltas;
+		deltas = new ArrayDeque<GameDelta>();
+		if (needsRedraw) {
+			redrawAll();
+			needsRedraw = false;
+		} else {
+			for (GameDelta delta : deltasThisFrame) {
+				processDelta(delta);
+			}
+		}
+
+		if (!state.isPaused()) {
+			particles.stream().forEach(Particle::tick);
+		}
+	}
+
+	private void processDelta(GameDelta delta) {
+		for(Entity entity : delta.entitiesMoved) {
+			updateMoved(entity);
+		}
+
+		for(Entity entity : delta.entitiesDestroyed) {
+			removeEntity(entity);
+		}
+
+		for(Entity entity : delta. entitiesAdded) {
+			addEntity(entity);
+		}
 	}
 }
