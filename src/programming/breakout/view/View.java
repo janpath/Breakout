@@ -169,7 +169,7 @@ public class View extends GraphicsProgram implements Observer {
 	private void drawGameOver() {
 		GCompound gameOver= new GCompound();
 		GLabel gameOverLabel = new GLabel("Game Over");
-		GLabel explanation = new GLabel("You ran out of bricks!");
+		GLabel explanation = new GLabel("You ran out of bricks :(");
 		gameOverLabel.setFont(new Font(GLabel.DEFAULT_FONT.getFontName(),
 		                               GLabel.DEFAULT_FONT.getStyle(), 50));
 		gameOverLabel.setColor(objColor);
