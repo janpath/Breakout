@@ -75,7 +75,7 @@ public class View extends GraphicsProgram implements Observer {
 		void tick() {
 			shape.move(velocity.getX0()*state.getTimeFactor(),
 			           velocity.getX1()*state.getTimeFactor());
-			shape.rotate(Math.toDegrees(torque));
+			shape.rotate(Math.toDegrees(torque*state.getTimeFactor()));
 			velocity = velocity.add(acceleration.scale(state.getTimeFactor()));
 		}
 	}
@@ -94,11 +94,11 @@ public class View extends GraphicsProgram implements Observer {
 	private static final int PARTICLE_MIN_COUNT = 50;
 	private static final int PARTICLE_MAX_COUNT = 65;
 	private static final double PARTICLE_SPEED = 2;
-	private static final double PARTICLE_TORQUE = Math.PI/10;
+	private static final double PARTICLE_TORQUE = Math.PI/5;
 	private static final double PARTICLE_MIN_VERTICES = 3;
 	private static final double PARTICLE_MAX_VERTICES = 5;
 	private static final double PARTICLE_MIN_SIZE = .5;
-	private static final double PARTICLE_MAX_SIZE = 1;
+	private static final double PARTICLE_MAX_SIZE = 2;
 	private static final Vector2D PARTICLE_GRAVITY = new Vector2D(0, .3);
 
 	private static final int REFRESH_RATE = 20;
