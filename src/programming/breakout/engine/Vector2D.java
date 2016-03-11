@@ -97,4 +97,9 @@ public class Vector2D {
 	public String toString() {
 		return String.format("%s[%f, %f]", getClass(), getX0(), getX1());
 	}
+
+	@Override
+	public int hashCode() {
+		return Double.hashCode(getX0()) + Double.hashCode(getX1());
+	}
 }
