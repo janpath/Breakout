@@ -108,7 +108,7 @@ public class View extends GraphicsProgram implements Observer {
 	private static final double PARTICLE_MAX_VERTICES = 5;
 	private static final double PARTICLE_MIN_SIZE = .5;
 	private static final double PARTICLE_MAX_SIZE = 2;
-	private static final Vector2D PARTICLE_GRAVITY = new Vector2D(0, .3);
+	private static final Vector2D PARTICLE_GRAVITY = new Vector2D(0, .4);
 
 	private static final int REFRESH_RATE = 20;
 
