@@ -54,6 +54,9 @@ import static programming.breakout.engine.GameState.GameDelta;
 @SuppressWarnings("serial")
 public class View extends GraphicsProgram implements Observer {
 
+	/**
+	 * Represents a particle used for visual effects
+	 */
 	private class Particle {
 		Vector2D velocity;
 		Vector2D acceleration;
@@ -70,10 +73,18 @@ public class View extends GraphicsProgram implements Observer {
 			this.shape = shape;
 		}
 
+		/**
+		 * Calculate new state of particle
+		 */
 		void tick() {
+			//Move shape by velocity
 			shape.move(velocity.getX0()*state.getTimeFactor(),
 			           velocity.getX1()*state.getTimeFactor());
+
+			//Rotate shape by torque
 			shape.rotate(Math.toDegrees(torque*state.getTimeFactor()));
+
+			//Increase velocity by acceleration
 			velocity = velocity.add(acceleration.scale(state.getTimeFactor()));
 		}
 	}
@@ -104,7 +115,6 @@ public class View extends GraphicsProgram implements Observer {
 	private double fieldOffsetX, fieldOffsetY;
 
 	private HashMap<Entity, GObject> entities = new HashMap<Entity, GObject>();
-
 	private GCompound particlesComp = new GCompound();
 	private ArrayList<Particle> particles = new ArrayList<Particle>();
 	private GCompound playingField = new GCompound();
@@ -113,22 +123,25 @@ public class View extends GraphicsProgram implements Observer {
 	private GCompound instructions = new GCompound();
 	private GCompound gameOver = new GCompound();
 	private HashMap<Ball, Vector2D> lastLocations = new HashMap<Ball, Vector2D>();
+	private ArrayDeque<GameDelta> deltas = new ArrayDeque<GameDelta>();
+	private boolean needsRedraw = false;
 
+	/**
+	 * Create new View and register it with the given GameState
+	 */
 	public View(GameState state) {
 		this.state = state;
 		state.addObserver(this);
 	}
 
 	/**
-	 * Initialize the window, by drawing the background.
+	 * Initialize the window and draw everything.
 	 */
 	@Override
 	public void init() {
 		setBackground(bgColor);
 		rescale();
 		redrawAll();
-		drawInstructions();
-		drawGameOver();
 
 		// Resize things when window is resized
 		addComponentListener(new ComponentAdapter() {
@@ -143,19 +156,27 @@ public class View extends GraphicsProgram implements Observer {
 	 */
 	private void drawInstructions() {
 		GCompound instructions = new GCompound();
+
 		GLabel pause = new GLabel("SPACE to (un)pause");
 		GLabel speed = new GLabel("SHIFT to slow down, CTRL to speed up");
+
 		pause.setFont(new Font(GLabel.DEFAULT_FONT.getFontName(),
 		                       GLabel.DEFAULT_FONT.getStyle(), 50));
-		// speed.setFont(GLabel.DEFAULT_FONT.deriveFont(20));
+
 		pause.setColor(objColor);
 		speed.setColor(objColor);
+
+		//Align instructions in the center
 		instructions.add(pause, (getWidth() - pause.getWidth())/2,
 		                 (getHeight()*1.3 + pause.getAscent())/2);
 		instructions.add(speed, (getWidth() - speed.getWidth())/2,
 		                 (getHeight()*1.3 + pause.getAscent())/2
 		                 + speed.getHeight() + pause.getDescent());
+
+		//Make instructions visible, only if the game is paused
 		instructions.setVisible(state.isPaused() && !state.isGameOver());
+
+		//Replace old instructions compound
 		remove(this.instructions);
 		add(instructions);
 		this.instructions = instructions;
@@ -166,25 +187,32 @@ public class View extends GraphicsProgram implements Observer {
 	 */
 	private void drawGameOver() {
 		GCompound gameOver= new GCompound();
+
 		GLabel gameOverLabel = new GLabel("Game Over");
 		GLabel explanation = new GLabel("You ran out of bricks :(");
+
 		gameOverLabel.setFont(new Font(GLabel.DEFAULT_FONT.getFontName(),
 		                               GLabel.DEFAULT_FONT.getStyle(), 50));
+
 		gameOverLabel.setColor(objColor);
 		explanation.setColor(objColor);
+
 		gameOver.add(gameOverLabel, (getWidth() - gameOverLabel.getWidth())/2,
 		             (getHeight()*1.3 + gameOverLabel.getAscent())/2);
 		gameOver.add(explanation, (getWidth() - explanation.getWidth())/2,
 		             (getHeight()*1.3 + gameOverLabel.getAscent())/2
 		             + explanation.getHeight() + gameOverLabel.getDescent());
+
+		//Make game over message visibile only if the game is over
 		gameOver.setVisible(state.isGameOver());
+
 		remove(this.gameOver);
 		add(gameOver);
 		this.gameOver= gameOver;
 	}
 
 	/**
-	 * Redraw everything
+	 * Rescale window if window size has changed
 	 */
 	private void rescale() {
 		double oldScale = scale;
@@ -209,35 +237,53 @@ public class View extends GraphicsProgram implements Observer {
 		drawGameOver();
 	}
 
-	ArrayDeque<GameDelta> deltas = new ArrayDeque<GameDelta>();
-	boolean needsRedraw = false;
 	/**
 	 * Update us when there is a new game state.
 	 */
 	@Override
 	public void update(Observable observable, Object arg) {
 		if(arg instanceof GameDelta) {
+			// If we were supplied with information about what changed, we can just
+			// change that
 			deltas.add((GameDelta) arg);
 		}
 		else {
+			// Otherwise we have to redraw everything
 			needsRedraw = true;
 		}
 	}
 
+	/**
+	 * Add an entity to the canvas
+	 */
 	private void addEntity(Entity entity) {
 		GObject obj = entity2GObject(entity);
 		entities.put(entity, obj);
 		playingField.add(obj);
 	}
 
+	/**
+	 * Remove an entity from the canvas
+	 */
 	private void removeEntity(Entity entity) {
 		playingField.remove(entities.get(entity));
+
+		//Spawn particles for the destroyed entity
 		spawnParticles(entity.getBounds(),
-		               (int) Math.random()*(PARTICLE_MAX_COUNT - PARTICLE_MIN_COUNT) + PARTICLE_MIN_COUNT,
-		               entity instanceof Paddle ? PARTICLE_SPEED*5 : PARTICLE_SPEED);
+		               (int) Math.random()*(PARTICLE_MAX_COUNT - PARTICLE_MIN_COUNT)
+		               + PARTICLE_MIN_COUNT,
+		               //Make initial particle velocity higher if paddle was
+		               //destroyed
+		               entity instanceof Paddle
+		               ? PARTICLE_SPEED*5 : PARTICLE_SPEED);
+
+		//Remove entity from entities to GObjects mapping
 		entities.remove(entity);
 	}
 
+	/**
+	 * Move an entity on the canvas
+	 */
 	private void updateMoved(Entity entity) {
 		GObject obj = entities.get(entity);
 		if(obj != null) {
@@ -255,10 +301,11 @@ public class View extends GraphicsProgram implements Observer {
 	private void createBallShadow(Ball ball) {
 		Vector2D lastLocation = lastLocations.get(ball);
 		if(lastLocation == null ||
-		   lastLocation.sub(ball.getPosition()).getLength() > SHADOW_DELTA) {
+		   lastLocation.sub(ball.getPosition()).getMagnitude() > SHADOW_DELTA) {
 			lastLocations.put(ball, ball.getPosition());
 			GOval oval = new GOval(ball.getX()*scale, ball.getY()*scale,
-			                       ball.getRadius()*2*scale, ball.getRadius()*2*scale);
+			                       ball.getRadius()*2*scale,
+			                       ball.getRadius()*2*scale);
 			oval.setFilled(true);
 			oval.setColor(SHADOW_COLOR);
 			shadowComp.add(oval);
@@ -271,19 +318,30 @@ public class View extends GraphicsProgram implements Observer {
 			.forEachRemaining(obj -> {
 					if(obj instanceof GOval) {
 						GOval oval = (GOval) obj;
-						oval.move(oval.getWidth()*(1 - SHADOW_FADE )/2*state.getTimeFactor(),
-						          oval.getHeight()*(1 - SHADOW_FADE )/2*state.getTimeFactor());
-						oval.scale(1 - state.getTimeFactor() + SHADOW_FADE*state.getTimeFactor());
+						// Move oval so that after shrinking the center stays in place
+						oval.move(oval.getWidth()*(1 - SHADOW_FADE )/2
+						          * state.getTimeFactor(),
+						          oval.getHeight()*(1 - SHADOW_FADE )/2
+						          * state.getTimeFactor());
+
+						// Shrink oval
+						oval.scale(1 - state.getTimeFactor()
+						           + SHADOW_FADE*state.getTimeFactor());
 
 						if(oval.getHeight() < 1) {
+							// If oval is smaller than one pixel, remove it.
 							toBeRemoved.add(oval);
 						} else {
+							// Fade color of oval
 							Color prevColor = oval.getColor();
 							oval.setColor(new Color(prevColor.getRed(),
 							                        prevColor.getGreen(),
 							                        prevColor.getBlue(),
-							                        (int) ( prevColor.getAlpha()*(1 - state.getTimeFactor() + SHADOW_FADE*state.getTimeFactor() ) )));
-						}
+							                        (int)
+							                        (prevColor.getAlpha() *
+							                         (1 - state.getTimeFactor() +
+                                          SHADOW_FADE*state.getTimeFactor()))));
+            }
 					}
 				});
 		toBeRemoved.forEach(oval -> shadowComp.remove(oval));
@@ -294,20 +352,27 @@ public class View extends GraphicsProgram implements Observer {
 	 */
 	private void spawnParticles(Rectangle rect, int count, double speed) {
 		for (int i = 0; i < count; i += 1) {
+			//Create particle with random velocity, torque, and shape
 			Particle particle =
 				new Particle(new Vector2D(Math.random()*speed*2 - speed,
 				                          Math.random()*speed*2 - speed),
 				             PARTICLE_GRAVITY,
 				             Math.random()*PARTICLE_TORQUE*2 - PARTICLE_TORQUE,
-				             getRandomPolygon(( Math.random()*rect.getWidth() + rect.getX() )*scale,
-				                              ( Math.random()*rect.getHeight() + rect.getY() )*scale,
-				                              ( Math.random()*(PARTICLE_MAX_SIZE - PARTICLE_MIN_SIZE)
+				             getRandomPolygon((Math.random()*rect.getWidth()
+				                                + rect.getX() )*scale,
+				                              (Math.random()*rect.getHeight()
+				                                + rect.getY() )*scale,
+				                              (Math.random()*(PARTICLE_MAX_SIZE
+				                                               - PARTICLE_MIN_SIZE)
 				                                + PARTICLE_MIN_SIZE ) * scale));
 			particles.add(particle);
 			particlesComp.add(particle.shape);
 		}
 	}
 
+	/**
+	 * Create a random polygon within the given square
+	 */
 	GPolygon getRandomPolygon(double x, double y, double size) {
 		GPolygon poly = new GPolygon();
 		int vertices =
@@ -327,7 +392,7 @@ public class View extends GraphicsProgram implements Observer {
 	}
 
 	/**
-	 * Draw entities
+	 * Redraw everything
 	 */
 	private void redrawAll() {
 		entities.clear();
@@ -343,6 +408,8 @@ public class View extends GraphicsProgram implements Observer {
 		add(shadowComp);
 		add(playingField);
 		add(particlesComp);
+
+		//Background is drawn over the playing field, to clip it's contents
 		drawBackground();
 
 		drawInstructions();
@@ -367,7 +434,7 @@ public class View extends GraphicsProgram implements Observer {
 			obj = gball;
 
 		} else if(entity instanceof Paddle) {
-			//Draw paddle
+			//Draw paddle as two arcs, the second hiding the bottom of the first
 			Paddle paddle = (Paddle) entity;
 
 			double arcStart = Math.toDegrees((Math.PI - paddle.getAngle())/2);
@@ -375,15 +442,22 @@ public class View extends GraphicsProgram implements Observer {
 			GCompound paddleComp = new GCompound();
 			paddleComp.setLocation(paddle.getX()*scale, paddle.getY()*scale);
 
-			GArc paddleArc = new GArc((-paddle.getRadius() + paddle.getWidth()/2 )*scale, 0,
-			                          paddle.getRadius()*2*scale, paddle.getRadius()*2*scale,
+			// Create the visible arc
+			GArc paddleArc = new GArc((paddle.getWidth()/2-paddle.getRadius())*scale,
+			                          0,
+			                          paddle.getRadius()*2*scale,
+			                          paddle.getRadius()*2*scale,
 			                          arcStart, Math.toDegrees(paddle.getAngle()));
 			paddleArc.setFilled(true);
 			paddleArc.setColor(objColor);
 
+			// Create the hiding arc
 			double hideOffset = paddle.getHeight()/2*scale;
-			GArc paddleHide = new GArc(( -paddle.getRadius() + paddle.getWidth()/2 )*scale + hideOffset/2, hideOffset,
-			                           paddle.getRadius()*2*scale - hideOffset, paddle.getRadius()*2*scale - hideOffset,
+			GArc paddleHide = new GArc((paddle.getWidth()/2-paddle.getRadius())*scale
+			                           + hideOffset/2,
+			                           hideOffset,
+			                           paddle.getRadius()*2*scale - hideOffset,
+			                           paddle.getRadius()*2*scale - hideOffset,
 			                           arcStart, Math.toDegrees(paddle.getAngle()));
 			paddleHide.setColor(bgColor);
 			paddleHide.setFilled(true);
@@ -413,7 +487,7 @@ public class View extends GraphicsProgram implements Observer {
 	}
 
 	/**
-	 * Draw background
+	 * Draw the sides and the border
 	 */
 	private void drawBackground() {
 		GCompound buffer = new GCompound();
@@ -422,9 +496,11 @@ public class View extends GraphicsProgram implements Observer {
 		GRect right = new GRect(getWidth() - fieldOffsetX, 0,
 		                        fieldOffsetX, getHeight());
 		GRect top = new GRect(0, 0, getWidth(), fieldOffsetY);
-		GRect bottom = new GRect(0, getHeight()-fieldOffsetY, getWidth(), fieldOffsetY);
+		GRect bottom = new GRect(0, getHeight()-fieldOffsetY,
+		                         getWidth(), fieldOffsetY);
 		GRect border = new GRect(fieldOffsetX, fieldOffsetY,
-		                         state.getWidth()*scale - 1, state.getHeight()*scale - 1);
+		                         state.getWidth()*scale - 1,
+		                         state.getHeight()*scale - 1);
 		left.setFilled(true);
 		right.setFilled(true);
 		top.setFilled(true);
@@ -468,6 +544,7 @@ public class View extends GraphicsProgram implements Observer {
 	}
 
 	private void tick() {
+		//Register all accumulated deltas
 		ArrayDeque<GameDelta> deltasThisFrame = deltas;
 		deltas = new ArrayDeque<GameDelta>();
 		if (needsRedraw) {
@@ -479,6 +556,7 @@ public class View extends GraphicsProgram implements Observer {
 			}
 		}
 
+		//Animate particles and ball trail
 		if (!state.isPaused()) {
 			ArrayList<Particle> toBeRemoved = new ArrayList<Particle>();
 
@@ -498,6 +576,9 @@ public class View extends GraphicsProgram implements Observer {
 		}
 	}
 
+	/**
+	 * Process a game delta
+	 */
 	private void processDelta(GameDelta delta) {
 		if(delta.pausedToggled) {
 			instructions.setVisible(state.isPaused() && !state.isGameOver());

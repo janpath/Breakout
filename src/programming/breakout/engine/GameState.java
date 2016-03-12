@@ -47,20 +47,17 @@ public class GameState extends Observable {
 		public ArrayList<Entity> entitiesDestroyed;
 		public ArrayList<Entity> entitiesAdded;
 		public HashSet<Entity> entitiesMoved;
-		public ArrayList<Pair<Entity, Entity>> entitiesCollided;
 		public int scoreDelta;
 		public boolean pausedToggled, gameOverToggled;
 
 		GameDelta(ArrayList<Entity> entitiesDestroyed,
 		          ArrayList<Entity> entitiesAdded,
 		          HashSet<Entity> entitiesMoved,
-		          ArrayList<Pair<Entity, Entity>> entitiesCollided,
 		          int scoreDelta,
 		          boolean pausedToggled,
 		          boolean gameOverToggled) {
 			this.entitiesDestroyed = entitiesDestroyed;
 			this.entitiesMoved = entitiesMoved;
-			this.entitiesCollided = entitiesCollided;
 			this.scoreDelta = scoreDelta;
 			this.pausedToggled = pausedToggled;
 			this.gameOverToggled = gameOverToggled;
@@ -70,75 +67,59 @@ public class GameState extends Observable {
 			entitiesDestroyed = new ArrayList<Entity>();
 			entitiesAdded = new ArrayList<Entity>();
 			entitiesMoved = new HashSet<Entity>();
-			entitiesCollided = new ArrayList<Pair<Entity, Entity>>();
-		}
-
-		/**
-		 * Get the union of two deltas.
-		 */
-		public GameDelta union(GameDelta other) {
-			ArrayList<Entity> entitiesDestroyed = new ArrayList<Entity>();
-			entitiesDestroyed.addAll(this.entitiesDestroyed);
-			entitiesDestroyed.addAll(other.entitiesDestroyed);
-
-			ArrayList<Entity> entitiesAdded = new ArrayList<Entity>();
-			entitiesAdded.addAll(this.entitiesAdded);
-			entitiesAdded.addAll(other.entitiesAdded);
-
-			HashSet<Entity> entitiesMoved = new HashSet<Entity>();
-			entitiesMoved.addAll(this.entitiesMoved);
-			entitiesMoved.addAll(other.entitiesMoved);
-
-			ArrayList<Pair<Entity, Entity>> entitiesCollided = new ArrayList<Pair<Entity, Entity>>();
-			entitiesCollided.addAll(this.entitiesCollided);
-			entitiesCollided.addAll(other.entitiesCollided);
-
-			int scoreDelta = this.scoreDelta + other.scoreDelta;
-			boolean pausedToggled = this.pausedToggled ^ other.pausedToggled;
-			boolean gameOverToggled = this.gameOverToggled ^ other.gameOverToggled;
-
-			return new GameDelta(entitiesDestroyed,
-			                     entitiesAdded,
-			                     entitiesMoved,
-			                     entitiesCollided,
-			                     scoreDelta,
-			                     pausedToggled,
-			                     gameOverToggled);
 		}
 	}
 
-	protected void setChanged() {
-		super.setChanged();
-	}
-
+	/**
+	 * Add an entity to the list of moved entities for the next game delta
+	 */
 	protected void addMoved(Entity e) {
 		delta.entitiesMoved.add(e);
 		setChanged();
 	}
 
-	protected void addCollided(Entity e1, Entity e2) {
-		delta.entitiesCollided.add(new Pair<Entity, Entity>(e1, e2));
-		setChanged();
-	}
 
+	/**
+	 * Add an item to the playing field
+	 */
 	protected void add(Entity e) {
 		entities.add(e);
 		delta.entitiesAdded.add(e);
 		setChanged();
 	}
 
+	/**
+	 * Remove an entity from the playing field
+	 */
 	protected void remove(Entity e) {
 		entities.remove(e);
 		delta.entitiesDestroyed.add(e);
 		setChanged();
 	}
 
-	void endTick() {
-		notifyObservers(delta);
+	/**
+	 * Notify observers with the accumulated GameDelta and set up a new GameDelta.
+	 * @param useDelta whether to use the accumulated GameDelta
+	 */
+	void endTick(boolean useDelta) {
+		if (useDelta) {
+			notifyObservers(delta);
+		} else {
+			setChanged();
+			notifyObservers();
+		}
+
 		delta = new GameDelta();
 	}
 
 	/**
+	 * End tick using delta
+	 */
+	void endTick() {
+		endTick(true);
+  }
+
+  /**
 	 * Get a list of all the objects on the playing field
 	 * @return List of objects on playing field
 	 */
@@ -197,7 +178,7 @@ public class GameState extends Observable {
 	}
 
 	/**
-	 * @param gameOver the gameOver to set
+	 * Set whether the game is over or not
 	 */
 	void setGameOver(boolean gameOver) {
 		if (this.gameOver == gameOver) {
@@ -249,6 +230,11 @@ public class GameState extends Observable {
 		return timeFactor;
 	}
 
+	/**
+	 * Set the time factor.
+	 * @param timeFactor The timeFactor to be set. A timeFactor of 2 makes the
+	 * game run twice as fast as a time factor of 1.
+	 */
 	void setTimeFactor(double timeFactor) {
 		this.timeFactor = timeFactor;
 	}

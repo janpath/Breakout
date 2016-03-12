@@ -23,11 +23,6 @@ package programming.breakout.engine;
 import java.util.ArrayList;
 
 public class Engine implements Runnable {
-  /**
-   * game state
-   */
-	private boolean isPaused = false;
-
 	/**
 	 * Playing field
 	 */
@@ -54,7 +49,9 @@ public class Engine implements Runnable {
 	 * Ball
 	 */
 	private static final double RADIUS = 1;
-	private static final Vector2D START_POS = new Vector2D(PLAYING_FIELD_WIDTH/2 - RADIUS, PLAYING_FIELD_HEIGHT/2 - RADIUS);
+	private static final Vector2D START_POS
+		= new Vector2D(PLAYING_FIELD_WIDTH/2 -
+		               RADIUS, PLAYING_FIELD_HEIGHT/2 - RADIUS);
 	/* Velocity in units per frame */
 	private Vector2D velocity = new Vector2D(0.0, 2);
 	private Ball ball;
@@ -77,10 +74,26 @@ public class Engine implements Runnable {
 	@Override
 	public void run() {
 
-		while (true) {
-			paddle.setPosition(new Vector2D(( state.getWidth()-paddle.getWidth() )/2, state.getHeight() - paddle.getHeight()*2));
-			setGameState();
+		// Restart the game until the player managed too destroy all the pour little
+		// bricks
+		while (!state.isGameOver()) {
+			//Initialise everything
+			ArrayList<Entity> list = state.getEntityList();
+			this.bricks = createBricks();
+			this.ball = createBall();
+			list.clear();
+			list.addAll(bricks);
+			list.add(ball);
+			list.add(paddle);
 
+			//Center paddle
+			paddle.setPosition(new Vector2D((state.getWidth()-paddle.getWidth() )/2,
+			                                state.getHeight()-paddle.getHeight()*2));
+
+			//Notify observers of state without delta
+			state.endTick(false);
+
+			//Wait a few ticks before starting the game
 			for(int i=0; i < 1000; i += 20) {
 				try {
 					Thread.sleep(20);
@@ -89,8 +102,9 @@ public class Engine implements Runnable {
 				state.endTick();
 			}
 
-			while (isRunning()) {
+			while (ballInField() && !state.isGameOver()) {
 				long start = System.currentTimeMillis();
+
 				if (!state.isPaused()) {
 					moveBall();
 				}
@@ -98,7 +112,6 @@ public class Engine implements Runnable {
 
 				if(gameOver()) {
 					state.setGameOver(true);
-					return;
 				}
 
 				long elapsed = start - System.currentTimeMillis();
@@ -109,9 +122,12 @@ public class Engine implements Runnable {
 				}
 			}
 
+			// When the ball fall out of the playing field the paddle is temporarily
+			// destroyed
 			state.remove(paddle);
 			state.endTick();
 
+			// Wait two seconds before restarting the game
 			try {
 				Thread.sleep(2000);
 			} catch (InterruptedException ex) {
@@ -123,7 +139,11 @@ public class Engine implements Runnable {
 	 * this method moves the ball
 	 */
 	private void moveBall() {
-		Vector2D newPosition = ball.getPosition().add(ball.getVelocity().scale(state.getTimeFactor()));
+		// Move ball, then handle collisions, so to not have frames, where the ball
+		// is overlapping something.
+		Vector2D newPosition = ball.getPosition()
+			.add(ball.getVelocity().scale(state.getTimeFactor()));
+
 		ball.setPosition(newPosition);
 		state.addMoved(ball);
 
@@ -145,10 +165,16 @@ public class Engine implements Runnable {
 		// First move the ball out of collison
 		ball.setPosition(ball.getPosition().add(outOfCollisonVector));
 
-		Vector2D norm = outOfCollisonVector.scale(1/outOfCollisonVector.getLength());
+		// Mirror the velocity of the ball over the axis orthogonal to the
+		// outOfCollisonVector
+		Vector2D norm = outOfCollisonVector //Normalise vector
+			.scale(1/outOfCollisonVector.getMagnitude());
+		// Get the velocity in the direction of the normal vector
 		double scalar = norm.dotProduct(ball.getVelocity());
-		Vector2D dotVector = norm.scale(scalar*2);
-		Vector2D mirroredVelocity = ball.getVelocity().sub(dotVector);
+
+		//Scale the normal vector by that velocity
+		Vector2D mirroredDiff = norm.scale(scalar*2);
+		Vector2D mirroredVelocity = ball.getVelocity().sub(mirroredDiff);
 		ball.setVelocity(mirroredVelocity);
 	}
 
@@ -157,34 +183,56 @@ public class Engine implements Runnable {
 	 * nothing happens
 	 */
 	private Vector2D getWallCollision() {
-		Vector2D outOfCollisonVector = new Vector2D(Math.max(0, -ball.getX()) + Math.min(0, state.getWidth() - ( ball.getX() + 2*ball.getRadius())) ,
-		                                            Math.max(0, -ball.getY()));
+		Vector2D outOfCollisonVector
+			= new Vector2D(Math.max(0, -ball.getX()) +
+			               Math.min(0, state.getWidth() -
+			                        (ball.getX() + 2*ball.getRadius())),
+			               Math.max(0, -ball.getY()));
 
-		return outOfCollisonVector.equals(new Vector2D(0, 0)) ? null : outOfCollisonVector;
+		// If the ball is already in the playing field, return null instead of the
+		// 0 vector
+		return outOfCollisonVector.equals(new Vector2D(0, 0))
+			? null : outOfCollisonVector;
 	}
 
 	/**
 	 * this method handles a possible collision with a brick
+	 * @return the shortest vector that moves the ball out of collision or
+	 * {@code null} if no collision was detected.
 	 */
 	private Vector2D getBrickCollison() {
+		// First make a broad collision check
 		if (ball.getY() > getLowestBrickY()) {
 			return null;
 		}
 
-		Pair<Rectangle, Vector2D> collisionInfo = whichBrick();
+		// Test all bricks for collision. Only handle first.
+		Pair<Rectangle, Vector2D> collisionInfo = null;
+		for (Rectangle r : bricks) {
+			Vector2D axis;
+			if ((axis = rectangleIsHit(r)) != null) {
+				collisionInfo = new Pair<Rectangle, Vector2D>(r, axis);
+				break;
+			}
+		}
+
+		//If a collision was detected, remove that brick
 		if (collisionInfo != null) {
 			bricks.remove(collisionInfo.getLeft());
 			state.remove(collisionInfo.getLeft());
 			return collisionInfo.getRight();
+		} else {
+			return null;
 		}
-		return null;
 	}
 
 	/**
 	 * this method handles a possible collision with the paddle
 	 */
 	private Vector2D getPaddleCollision() {
+		//First check if the bounding rectangle was hit
 		if(rectangleIsHit(paddle) != null) {
+			//Check if the circle was hit
 			Vector2D outOfCollisionVector =
 				ballIsHit(new Ball(paddle.getArcCenter()
 				                   .sub(new Vector2D(paddle.getRadius(),
@@ -192,7 +240,8 @@ public class Engine implements Runnable {
 				                   paddle.getRadius()));
 
 			if(outOfCollisionVector != null) {
-				if(outOfCollisionVector.getX1()/outOfCollisionVector.getLength()*paddle.getRadius()
+				if(outOfCollisionVector.getX1()/outOfCollisionVector.
+				   getMagnitude()*paddle.getRadius()
 				   > paddle.getHeight() - paddle.getRadius()) {
 					//The ball actually collided with the corner of the paddle
 					Vector2D rectBottomMiddle = paddle.getPosition()
@@ -202,11 +251,12 @@ public class Engine implements Runnable {
 						diff.sub(new Vector2D(Math.copySign(paddle.getWidth()/2,
 						                                    diff.getX0()),
 						                      0));
-					if(cornerDiff.getLength() > ball.getRadius()) {
-						//Actually it's not colliding at all
+					if(cornerDiff.getMagnitude() > ball.getRadius()) {
+						//Actually it didn't collide at all
 						return null;
 					} else {
-						return cornerDiff.scale(ball.getRadius()/cornerDiff.getLength() - 1);
+						return
+							cornerDiff.scale(ball.getRadius()/cornerDiff.getMagnitude() - 1);
 					}
 				}
 
@@ -223,70 +273,69 @@ public class Engine implements Runnable {
 	 */
 	private Vector2D ballIsHit(Ball b) {
 		// a vector representing the center of the ball
-		Vector2D ballCenter = new Vector2D(ball.getX() + ball.getRadius(), ball.getY() + ball.getRadius());
+		Vector2D ballCenter = new Vector2D(ball.getX() + ball.getRadius(),
+		                                   ball.getY() + ball.getRadius());
 		// a vector representing the center of the ball
-		Vector2D collisionCenter = new Vector2D(b.getX() + b.getRadius(), b.getY() + b.getRadius());
+		Vector2D collisionCenter = new Vector2D(b.getX() + b.getRadius(),
+		                                        b.getY() + b.getRadius());
 
-		double collisionDistance = ball.getRadius() + b.getRadius();
-		Vector2D distance = ballCenter.sub(collisionCenter);
+		Vector2D centerDistance = ballCenter.sub(collisionCenter);
 
-		double overlapLength;
-		if (( overlapLength = distance.getLength() - collisionDistance ) < 0) {
-			return distance.scale(-overlapLength/distance.getLength());
+		double overlapLength = ball.getRadius() + b.getRadius()
+			- centerDistance.getMagnitude();
+		if (overlapLength > 0) {
+			return centerDistance.scale(overlapLength/centerDistance.getMagnitude());
 		}
 		return null;
 	}
 
 	/**
 	 * Checks if the ball hit the given rectangle.
-	 * @return the shortest vector, that moves the ball out of the overlap
+	 * @return the shortest vector, that moves the ball out of the overlap or
+	 * {@code null} if no collision was detected
 	 */
 	private Vector2D rectangleIsHit(Rectangle r) {
 		// a vector representing the center of the ball
 		Vector2D ballCenter = ball.getCenter();
-		Vector2D rectCenter = r.getPosition().add(new Vector2D(r.getWidth() / 2.0, r.getHeight() / 2.0));
+		Vector2D rectCenter = r.getPosition().add(new Vector2D(r.getWidth() / 2d,
+		                                                       r.getHeight() / 2d));
 		Vector2D centerDistance = ballCenter.sub(rectCenter);
 		Vector2D absDistance = new Vector2D(Math.abs(centerDistance.getX0()),
 		                                    Math.abs(centerDistance.getX1()));
 
-		double overlapLength;
 		if (( absDistance.getX0() >= r.getWidth()/2 + ball.getRadius() ) ||
 		    ( absDistance.getX1() >= r.getHeight()/2 + ball.getRadius() )) {
 			//The x or y coordinate difference is already bigger than the balls radius
 			return null;
+
 		} else if (absDistance.getX0() < r.getWidth()/2) {
 			//Ball overlaps the top or bottom
-			return new Vector2D(0, Math.copySign(absDistance.getX1() - (r.getHeight()/2 + ball.getRadius()),
+			return new Vector2D(0, Math.copySign(absDistance.getX1() -
+			                                     (r.getHeight()/2 + ball.getRadius()),
 			                                     centerDistance.getX1()));
+
 		} else if (absDistance.getX1() < r.getHeight()/2) {
 			//Ball overlaps the left or right edge
-			return new Vector2D(Math.copySign(absDistance.getX0() - (r.getWidth()/2 +  ball.getRadius() ),
+			return new Vector2D(Math.copySign(absDistance.getX0() -
+			                                  (r.getWidth()/2 +  ball.getRadius() ),
 			                                  centerDistance.getX0()), 0);
+
 		} else {
-			Vector2D cornerDistance = absDistance.sub(new Vector2D(r.getWidth(), r.getHeight()).scale(.5));
-			if ((overlapLength = cornerDistance.getLength() - ball.getRadius()) < 0) {
+			Vector2D cornerDistance = absDistance.sub(new Vector2D(r.getWidth(),
+			                                                       r.getHeight())
+			                                          .scale(.5));
+			double overlapLength = ball.getRadius() - cornerDistance.getMagnitude();
+			if (overlapLength > 0) {
 				//Ball overlaps the corner
-				return new Vector2D(Math.copySign(cornerDistance.getX0(), centerDistance.getX0()),
-				                    Math.copySign(cornerDistance.getX1(), centerDistance.getX1()))
-					.scale(-overlapLength/cornerDistance.getLength());
+				return new Vector2D(Math.copySign(cornerDistance.getX0(),
+				                                  centerDistance.getX0()),
+				                    Math.copySign(cornerDistance.getX1(),
+				                                  centerDistance.getX1()))
+					.scale(overlapLength/cornerDistance.getMagnitude());
 			} else {
 				return null;
 			}
 		}
-	}
-
-	/**
-	 * checks which brick is hit and returns it.
-	 * @return Pair of entity hit and the unit normal to the surface the ball hit pointing outwards.
-	 */
-	private Pair<Rectangle, Vector2D> whichBrick() {
-		for (Rectangle r : bricks) {
-			Vector2D axis;
-			if ((axis = rectangleIsHit(r)) != null) {
-				return new Pair<Rectangle, Vector2D>(r, axis);
-			}
-		}
-		return null;
 	}
 
 	/**
@@ -296,7 +345,8 @@ public class Engine implements Runnable {
 	private double getLowestBrickY() {
 		double maxY = Double.NEGATIVE_INFINITY;
 		for (Rectangle r : bricks) {
-			maxY = (r.getY() + r.getHeight() > maxY) ? r.getY() + r.getHeight() : maxY;
+			maxY = (r.getY() + r.getHeight() > maxY)
+				? r.getY() + r.getHeight() : maxY;
 		}
 		return maxY;
 	}
@@ -314,7 +364,8 @@ public class Engine implements Runnable {
 	 * creates the paddle, which is a rectangle
 	 */
 	private Paddle createPaddle() {
-		Vector2D startingPosition = new Vector2D((state.getWidth()-paddleLength)/2, state.getHeight() - paddleHeight*2);
+		Vector2D startingPosition = new Vector2D((state.getWidth()-paddleLength)/2,
+		                                         state.getHeight()-paddleHeight*2);
 		return new Paddle(startingPosition, paddleLength, paddleHeight);
 	}
 
@@ -332,9 +383,11 @@ public class Engine implements Runnable {
 	 */
 	private ArrayList<Rectangle> createBricks() {
 		ArrayList<Rectangle> bricks = new ArrayList<Rectangle>();
-		double brickSpacePerCol = state.getWidth() - (numberOfBrickCols * brickWidth);
+		double brickSpacePerCol = state.getWidth()
+			- (numberOfBrickCols * brickWidth);
 		double colPadding = brickSpacePerCol / (numberOfBrickCols + 1);
-		double brickSpacePerRow = state.getHeight() * 0.33 - (numberOfBrickRows * brickHeight);
+		double brickSpacePerRow = state.getHeight() * 0.33
+			- (numberOfBrickRows * brickHeight);
 		double rowPadding = brickSpacePerRow / (numberOfBrickRows + 1);
 		double x = colPadding;
 		double y = rowPadding;
@@ -356,25 +409,11 @@ public class Engine implements Runnable {
 	}
 
 	/**
-	 * initializes the GameState
+	 * checkes whether the ball is still in the playing field or only slightly out
+	 * of it.
 	 */
-	private void setGameState() {
-		ArrayList<Entity> list = state.getEntityList();
-		this.bricks = createBricks();
-		this.ball = createBall();
-		list.clear();
-		list.addAll(bricks);
-		list.add(ball);
-		list.add(paddle);
-		state.setChanged();
-		state.notifyObservers();
-	}
-
-	/**
-	 * checks whether the game is still running
-	 */
-	private boolean isRunning() {
-		return ball.getY() < state.getHeight()*1.1 && !isPaused;
+	private boolean ballInField() {
+		return ball.getY() < state.getHeight()*1.1;
 	}
 
 	/**
