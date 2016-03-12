@@ -1,4 +1,7 @@
 /*
+
+import java.awt.Component;
+
  * Copyright: 2016 Jan Path
  *            2016 Felix von der Heide
  *
@@ -28,23 +31,21 @@ public class Pair<S, T> {
 	/**
 	 * Left object
 	 */
-	public S left;
+	public final S left;
 
 	/**
 	 * Right object
 	 */
-	public T right;
+	public final T right;
 
+	/**
+	 * Create a pair with given components
+	 * @param left Left component
+	 * @param right Right component
+	 */
 	public Pair(S left, T right) {
 		this.left = left;
 		this.right = right;
-	}
-
-	/**
-	 * Create pair inferring type
-	 */
-	public static <S, T> Pair<S,T> of(S left, T right) {
-		return new Pair<S,T>(left, right);
 	}
 
 	/**

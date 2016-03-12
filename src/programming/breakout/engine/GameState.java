@@ -32,10 +32,13 @@ import programming.breakout.engine.Pair;
 public class GameState extends Observable {
 
 	private ArrayList<Entity> entities = new ArrayList<Entity>();
-	private boolean paused = false, gameOver = false;
+	private boolean paused = true, gameOver = false;
 	private int score = 0;
 	private double width, height;
 	private GameDelta delta = new GameDelta();
+	private double timeFactor = 1;
+	private Controller controller;
+	private Engine engine;
 
 	/**
 	 * Contains information about what changed since last time
@@ -44,20 +47,17 @@ public class GameState extends Observable {
 		public ArrayList<Entity> entitiesDestroyed;
 		public ArrayList<Entity> entitiesAdded;
 		public HashSet<Entity> entitiesMoved;
-		public ArrayList<Pair<Entity, Entity>> entitiesCollided;
 		public int scoreDelta;
 		public boolean pausedToggled, gameOverToggled;
 
 		GameDelta(ArrayList<Entity> entitiesDestroyed,
 		          ArrayList<Entity> entitiesAdded,
 		          HashSet<Entity> entitiesMoved,
-		          ArrayList<Pair<Entity, Entity>> entitiesCollided,
 		          int scoreDelta,
 		          boolean pausedToggled,
 		          boolean gameOverToggled) {
 			this.entitiesDestroyed = entitiesDestroyed;
 			this.entitiesMoved = entitiesMoved;
-			this.entitiesCollided = entitiesCollided;
 			this.scoreDelta = scoreDelta;
 			this.pausedToggled = pausedToggled;
 			this.gameOverToggled = gameOverToggled;
@@ -67,75 +67,59 @@ public class GameState extends Observable {
 			entitiesDestroyed = new ArrayList<Entity>();
 			entitiesAdded = new ArrayList<Entity>();
 			entitiesMoved = new HashSet<Entity>();
-			entitiesCollided = new ArrayList<Pair<Entity, Entity>>();
-		}
-
-		/**
-		 * Get the union of two deltas.
-		 */
-		public GameDelta union(GameDelta other) {
-			ArrayList<Entity> entitiesDestroyed = new ArrayList<Entity>();
-			entitiesDestroyed.addAll(this.entitiesDestroyed);
-			entitiesDestroyed.addAll(other.entitiesDestroyed);
-
-			ArrayList<Entity> entitiesAdded = new ArrayList<Entity>();
-			entitiesAdded.addAll(this.entitiesAdded);
-			entitiesAdded.addAll(other.entitiesAdded);
-
-			HashSet<Entity> entitiesMoved = new HashSet<Entity>();
-			entitiesMoved.addAll(this.entitiesMoved);
-			entitiesMoved.addAll(other.entitiesMoved);
-
-			ArrayList<Pair<Entity, Entity>> entitiesCollided = new ArrayList<Pair<Entity, Entity>>();
-			entitiesCollided.addAll(this.entitiesCollided);
-			entitiesCollided.addAll(other.entitiesCollided);
-
-			int scoreDelta = this.scoreDelta + other.scoreDelta;
-			boolean pausedToggled = this.pausedToggled ^ other.pausedToggled;
-			boolean gameOverToggled = this.gameOverToggled ^ other.gameOverToggled;
-
-			return new GameDelta(entitiesDestroyed,
-			                     entitiesAdded,
-			                     entitiesMoved,
-			                     entitiesCollided,
-			                     scoreDelta,
-			                     pausedToggled,
-			                     gameOverToggled);
 		}
 	}
 
-	protected void setChanged() {
-		super.setChanged();
-	}
-
+	/**
+	 * Add an entity to the list of moved entities for the next game delta
+	 */
 	protected void addMoved(Entity e) {
 		delta.entitiesMoved.add(e);
 		setChanged();
 	}
 
-	protected void addCollided(Entity e1, Entity e2) {
-		delta.entitiesCollided.add(new Pair<Entity, Entity>(e1, e2));
-		setChanged();
-	}
 
+	/**
+	 * Add an item to the playing field
+	 */
 	protected void add(Entity e) {
 		entities.add(e);
 		delta.entitiesAdded.add(e);
 		setChanged();
 	}
 
+	/**
+	 * Remove an entity from the playing field
+	 */
 	protected void remove(Entity e) {
 		entities.remove(e);
 		delta.entitiesDestroyed.add(e);
 		setChanged();
 	}
 
-	void endTick() {
-		notifyObservers(delta);
+	/**
+	 * Notify observers with the accumulated GameDelta and set up a new GameDelta.
+	 * @param useDelta whether to use the accumulated GameDelta
+	 */
+	void endTick(boolean useDelta) {
+		if (useDelta) {
+			notifyObservers(delta);
+		} else {
+			setChanged();
+			notifyObservers();
+		}
+
 		delta = new GameDelta();
 	}
 
 	/**
+	 * End tick using delta
+	 */
+	void endTick() {
+		endTick(true);
+  }
+
+  /**
 	 * Get a list of all the objects on the playing field
 	 * @return List of objects on playing field
 	 */
@@ -148,7 +132,7 @@ public class GameState extends Observable {
 	 * @return {@code true} if the game is paused, {@false} if it is running
 	 */
 	public boolean isPaused() {
-		return paused;
+		return paused || gameOver;
 	}
 
 	/**
@@ -156,12 +140,18 @@ public class GameState extends Observable {
 	 * @param paused {@code true} will pause the game, {@code false} unpause it.
 	 */
 	public void setPaused(boolean paused) {
-		if (this.paused != paused) {
-			delta.pausedToggled = !delta.pausedToggled;
-			setChanged();
+		if (this.paused == paused) {
+			return;
 		}
 
+		delta.pausedToggled = !delta.pausedToggled;
+		setChanged();
+
 		this.paused = paused;
+
+		if (paused && !gameOver) {
+			endTick();
+		}
 	}
 
 	/**
@@ -188,15 +178,21 @@ public class GameState extends Observable {
 	}
 
 	/**
-	 * @param gameOver the gameOver to set
+	 * Set whether the game is over or not
 	 */
 	void setGameOver(boolean gameOver) {
-		if (this.gameOver != gameOver) {
-			delta.gameOverToggled = !delta.gameOverToggled;
-			setChanged();
+		if (this.gameOver == gameOver) {
+			return;
 		}
 
+		delta.gameOverToggled = !delta.gameOverToggled;
+		setChanged();
+
 		this.gameOver = gameOver;
+
+		if(gameOver) {
+			endTick();
+		}
 	}
 
 	/**
@@ -225,5 +221,49 @@ public class GameState extends Observable {
 	 */
 	void setHeight(double height) {
 		this.height = height;
+	}
+
+	/**
+	 * @return get the current time factor.
+	 */
+	public double getTimeFactor() {
+		return timeFactor;
+	}
+
+	/**
+	 * Set the time factor.
+	 * @param timeFactor The timeFactor to be set. A timeFactor of 2 makes the
+	 * game run twice as fast as a time factor of 1.
+	 */
+	void setTimeFactor(double timeFactor) {
+		this.timeFactor = timeFactor;
+	}
+
+	/**
+	 * Get Controller
+	 */
+	public Controller getController() {
+		return controller;
+	}
+
+	/**
+	 * Set Controller
+	 */
+	void setController(Controller controller) {
+		this.controller = controller;
+	}
+
+	/**
+	 * Get Engine
+	 */
+	public Engine getEngine() {
+		return engine;
+	}
+
+	/**
+	 * Set Engine
+	 */
+	void setEngine(Engine engine) {
+		this.engine = engine;
 	}
 }

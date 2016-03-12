@@ -20,6 +20,9 @@
 
 package programming.breakout.engine;
 
+/**
+ * Immutable Object to represent a two dimensional vector.
+ */
 public class Vector2D {
 	private final double x0, x1;
 
@@ -39,7 +42,7 @@ public class Vector2D {
 
 	/**
 	 * Create new Vector
-	 * 
+	 *
 	 * @param x0
 	 *            first compounent
 	 * @param x1
@@ -52,7 +55,7 @@ public class Vector2D {
 
 	/**
 	 * Add two vectors
-	 * 
+	 *
 	 * @param otherVector
 	 *            vector to add
 	 * @return resulting vector from addition
@@ -63,7 +66,7 @@ public class Vector2D {
 
 	/**
 	 * Subtract another vector from this one
-	 * 
+	 *
 	 * @param otherVector
 	 *            vector to subtract
 	 * @return resulting vector from subtraction
@@ -73,23 +76,62 @@ public class Vector2D {
 	}
 
 	/**
-	 * Calculate the scalar product
+	 * Calculate the dot product
 	 */
 	public double dotProduct(Vector2D otherVector) {
 		return getX0() * otherVector.getX0() + getX1() * otherVector.getX1();
 	}
 
+	/**
+	 * Get the magnitude of the vector
+	 */
+	public double getMagnitude() {
+		return Math.sqrt(getX0() * getX0() + getX1() * getX1());
+	}
+
+	/**
+	 * Multiply the vector with a scalar
+	 */
+	public Vector2D scale(double scale) {
+		return new Vector2D(getX0() * scale, getX1() * scale);
+	}
+
+	/**
+	 * Rotate the vector
+	 * @param theta angle in radians around which to rotate the vector
+	 */
+	public Vector2D rotate(double theta) {
+		Vector2D result
+			= new Vector2D(Math.cos(theta)*getX0() - Math.sin(theta)*getX1(),
+                     Math.sin(theta)*getX0() + Math.cos(theta)*getX1());
+    assert result.getMagnitude() == getMagnitude():
+		"Vector rotation should not change the length";
+		return result;
+	}
+
+	/**
+	 * @return {@code true} if both components are the same.
+	 */
 	@Override
 	public boolean equals(Object o) {
 		return o instanceof Vector2D &&
 			((Vector2D) o).getX0() == x0 && ((Vector2D) o).getX1() == x1;
 	}
 
-	public double getLength() {
-		return Math.sqrt(getX0() * getX0() + getX1() * getX1());
+
+	/**
+	 * @returns Returns string of format Classname[x1, x2]
+	 */
+	@Override
+	public String toString() {
+		return String.format("%s[%f, %f]", getClass(), getX0(), getX1());
 	}
 
-	public Vector2D scale(double scale) {
-		return new Vector2D(getX0() * scale, getX1() * scale);
+	/**
+	 * Hashcodes are equal if both components are the same.
+	 */
+	@Override
+	public int hashCode() {
+		return Double.hashCode(getX0()) + Double.hashCode(getX1());
 	}
 }
