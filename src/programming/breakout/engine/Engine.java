@@ -27,7 +27,6 @@ public class Engine implements Runnable {
 	 * game state
 	 */
 	private GameState state;
-	private boolean isPaused = false;
 
 	/**
 	 * Playing field
@@ -39,17 +38,17 @@ public class Engine implements Runnable {
 	 * Paddle
 	 */
 	private Paddle paddle;
-	private double paddleLength = 0.2 * PLAYING_FIELD_WIDTH;
-	private double paddleHeight = 0.1 * paddleLength;
+	private static final double PADDLE_LENGTH = 0.2 * PLAYING_FIELD_WIDTH;
+	private static final double PADDLE_HEIGHT = 0.1 * PADDLE_LENGTH;
 
 	/**
 	 * Bricks
 	 */
 	private ArrayList<Rectangle> bricks;
-	private int numberOfBrickRows = 6;
-	private int numberOfBrickCols = 7;
-	private int brickWidth = 8;
-	private int brickHeight = 4;
+	private static final int NUMBER_OF_BRICK_ROWS = 6;
+	private static final int NUMBER_OF_BRICK_COLS = 7;
+	private static final int BRICK_WIDTH = 8;
+	private static final int BRICK_HEIGHT = 4;
 
 	/**
 	 * Ball
@@ -222,17 +221,11 @@ public class Engine implements Runnable {
 			}
 		}
 
-		// get x and y values of the reference vector
-		double x = rect.getWidth() / 2 - referenceVector.getX0();
-		double y = rect.getHeight() / 2 - referenceVector.getX1();
-		
-		// get x and y values of the velocity vector
-		double xVel = ball.getVelocity().getX0();
-		double yVel = ball.getVelocity().getX1();
-
-		// compare x and y to set velocity (direction)
-		if (x < y) {
-			ball.setVelocity(new Vector2D(-xVel, yVel));
+		//If a collision was detected, remove that brick
+		if (collisionInfo != null) {
+			bricks.remove(collisionInfo.getLeft());
+			state.remove(collisionInfo.getLeft());
+			return collisionInfo.getRight();
 		} else {
 			return null;
 		}
@@ -376,9 +369,9 @@ public class Engine implements Runnable {
 	 * creates the paddle, which is a rectangle
 	 */
 	private Paddle createPaddle() {
-		Vector2D startingPosition = new Vector2D((state.getWidth()-paddleLength)/2,
-		                                         state.getHeight()-paddleHeight*2);
-		return new Paddle(startingPosition, paddleLength, paddleHeight);
+		Vector2D startingPosition = new Vector2D((state.getWidth()-PADDLE_LENGTH)/2,
+		                                         state.getHeight()-PADDLE_HEIGHT*2);
+		return new Paddle(startingPosition, PADDLE_LENGTH, PADDLE_HEIGHT);
 	}
 
 	/**
@@ -396,25 +389,25 @@ public class Engine implements Runnable {
 	private ArrayList<Rectangle> createBricks() {
 		ArrayList<Rectangle> bricks = new ArrayList<Rectangle>();
 		double brickSpacePerCol = state.getWidth()
-			- (numberOfBrickCols * brickWidth);
-		double colPadding = brickSpacePerCol / (numberOfBrickCols + 1);
+			- (NUMBER_OF_BRICK_COLS * BRICK_WIDTH);
+		double colPadding = brickSpacePerCol / (NUMBER_OF_BRICK_COLS + 1);
 		double brickSpacePerRow = state.getHeight() * 0.33
-			- (numberOfBrickRows * brickHeight);
-		double rowPadding = brickSpacePerRow / (numberOfBrickRows + 1);
+			- (NUMBER_OF_BRICK_ROWS * BRICK_HEIGHT);
+		double rowPadding = brickSpacePerRow / (NUMBER_OF_BRICK_ROWS + 1);
 		double x = colPadding;
 		double y = rowPadding;
 
-		for (int i = 0; i < numberOfBrickRows; i++) {
-			for (int j = 0; j < numberOfBrickCols; j++) {
+		for (int i = 0; i < NUMBER_OF_BRICK_ROWS; i++) {
+			for (int j = 0; j < NUMBER_OF_BRICK_COLS; j++) {
 
 				Vector2D position = new Vector2D(x, y);
-				Rectangle brick = new Rectangle(position, brickWidth, brickHeight);
+				Rectangle brick = new Rectangle(position, BRICK_WIDTH, BRICK_HEIGHT);
 				bricks.add(brick);
 
-				x += brickWidth + colPadding;
+				x += BRICK_WIDTH + colPadding;
 
 			}
-			y += brickHeight + rowPadding;
+			y += BRICK_HEIGHT + rowPadding;
 			x = colPadding;
 		}
 		return bricks;
