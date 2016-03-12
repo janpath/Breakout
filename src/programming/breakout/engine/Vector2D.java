@@ -61,7 +61,8 @@ public class Vector2D {
 	 * @return resulting vector from addition
 	 */
 	public Vector2D add(Vector2D otherVector) {
-		return new Vector2D(getX0() + otherVector.getX0(), getX1() + otherVector.getX1());
+		return new Vector2D(getX0() + otherVector.getX0(),
+		                    getX1() + otherVector.getX1());
 	}
 
 	/**
@@ -72,7 +73,8 @@ public class Vector2D {
 	 * @return resulting vector from subtraction
 	 */
 	public Vector2D sub(Vector2D otherVector) {
-		return new Vector2D(getX0() - otherVector.getX0(), getX1() - otherVector.getX1());
+		return new Vector2D(getX0() - otherVector.getX0(),
+		                    getX1() - otherVector.getX1());
 	}
 
 	/**
