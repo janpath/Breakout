@@ -24,12 +24,6 @@ import java.util.ArrayList;
 
 public class Engine implements Runnable {
 	/**
-	 * game state
-	 */
-	private GameState state;
-	private boolean isPaused = false;
-
-	/**
 	 * Playing field
 	 */
 	private static final double PLAYING_FIELD_HEIGHT = 130;
@@ -67,7 +61,7 @@ public class Engine implements Runnable {
 	 */
 	private static final int REFRESH_RATE = 20;
 
-	
+	private GameState state;
 
 	public Engine(GameState state) {
 		this.state = state;
@@ -222,17 +216,11 @@ public class Engine implements Runnable {
 			}
 		}
 
-		// get x and y values of the reference vector
-		double x = rect.getWidth() / 2 - referenceVector.getX0();
-		double y = rect.getHeight() / 2 - referenceVector.getX1();
-		
-		// get x and y values of the velocity vector
-		double xVel = ball.getVelocity().getX0();
-		double yVel = ball.getVelocity().getX1();
-
-		// compare x and y to set velocity (direction)
-		if (x < y) {
-			ball.setVelocity(new Vector2D(-xVel, yVel));
+		//If a collision was detected, remove that brick
+		if (collisionInfo != null) {
+			bricks.remove(collisionInfo.getLeft());
+			state.remove(collisionInfo.getLeft());
+			return collisionInfo.getRight();
 		} else {
 			return null;
 		}
