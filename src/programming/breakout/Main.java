@@ -25,6 +25,7 @@ import programming.breakout.engine.Controller;
 import programming.breakout.engine.Engine;
 import programming.breakout.view.View;
 
+<<<<<<< HEAD
 /***************************************
  * 
  * This program is a variation of the video game classic called “Breakout”, it
@@ -59,6 +60,8 @@ import programming.breakout.view.View;
  * hand instance variables are used to store values that must have class-wide
  * scope.
  ***************************************/
+=======
+>>>>>>> branch 'master' of https://github.com/janpath/Breakout.git
 public class Main {
 	public static void main(String[] args) {
 		GameState game = new GameState();

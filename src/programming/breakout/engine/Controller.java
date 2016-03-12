@@ -21,10 +21,12 @@
 package programming.breakout.engine;
 
 import java.awt.event.KeyEvent;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseListener;
+import java.awt.event.FocusListener;
 import java.awt.Component;
 import java.awt.Robot;
 import java.awt.AWTException;
@@ -35,12 +37,16 @@ import java.awt.Point;
 
 import programming.breakout.engine.Vector2D;
 
-public class Controller implements MouseListener, MouseMotionListener, KeyListener {
+public class Controller implements MouseListener, MouseMotionListener, KeyListener, FocusListener {
 	private GameState state;
 	private Entity controlledObject;
 	private boolean freeX, freeY;
 	private Component component;
 	private Robot robot;
+
+	// Higher => lower sensitvity
+	private static final double MOUSE_SENSITIVITY = 500;
+
 	private Cursor blankCursor = Toolkit.getDefaultToolkit()
 		.createCustomCursor(new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB),
 		                    new Point(0, 0), "blank cursor");
@@ -60,20 +66,31 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 		this.freeY = y;
 		this.component = component;
 
-		//Add listeners
+		// Add listeners
 		component.addKeyListener(this);
 		component.addMouseListener(this);
 		component.addMouseMotionListener(this);
+		component.addFocusListener(this);
 
-		//Create Robot for mouse catching
+		// Create Robot for mouse catching
 		try {
 			robot = new Robot();
 		} catch(AWTException ex) {
 			ex.printStackTrace();
 		}
 
+		state.setController(this);
+
 		// Make cursor transparent
 		setCursor();
+	}
+
+	@Override
+	public void focusGained(FocusEvent e) {}
+
+	@Override
+	public void focusLost(FocusEvent e) {
+		state.setPaused(true);
 	}
 
 	/**
@@ -81,7 +98,7 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	 */
 	@Override
 	public void mouseMoved(MouseEvent event) {
-		if(state.isPaused()) {
+		if(state.isPaused() || !component.hasFocus()) {
 			return;
 		}
 
@@ -91,17 +108,17 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 		double yMoved = event.getY() - component.getHeight()/2;
 
 		// Translate that to the playing field
-		double dx = xMoved/component.getWidth()*state.getWidth();
-		double dy = yMoved/component.getHeight()*state.getHeight();
+		double dx = xMoved/MOUSE_SENSITIVITY*state.getWidth();
+		double dy = yMoved/MOUSE_SENSITIVITY*state.getHeight();
 
 		// Make sure we don't move the object out of the playing field
 		Rectangle bounds = controlledObject.getBounds();
-		dx += Math.max(0, -(bounds.getX() + dx))
-			- Math.max(0, bounds.getX() + bounds.getWidth() + dx - state.getWidth());
-		dy += Math.max(0, -(bounds.getY() + dy))
-			- Math.max(0, bounds.getY() + bounds.getHeight() + dy - state.getHeight());
+		dx += Math.max(0, -(bounds.getX() + dx)) -
+			Math.max(0, bounds.getX() + bounds.getWidth() + dx - state.getWidth());
+		dy += Math.max(0, -(bounds.getY() + dy)) -
+			Math.max(0, bounds.getY() + bounds.getHeight() + dy - state.getHeight());
 
-		//Move controlledObject
+		// Move controlledObject
 		double newX = controlledObject.getX() + ((freeX) ? dx : 0);
 		double newY = controlledObject.getY() + ((freeY) ? dy : 0);
 
@@ -114,14 +131,16 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 
 		assert isInField(): "Controlled object moved out of playing field.";
 
-		//Keep mouse in component. Don't do this every event in order to ignore the align.
+		//Keep mouse in component. Don't do this every event in order to ignore the
+		//align.
 		if(Math.max(Math.abs(xMoved), Math.abs(yMoved)) > 0) {
 			alignMouse();
 		}
 	}
 
 	/**
-	 * Grab the focus to the GCanvas as soon as the mouse enters, for keyboard input
+	 * Grab the focus to the GCanvas as soon as the mouse enters, for keyboard
+	 * input
 	 */
 	@Override
 	public void mouseDragged(MouseEvent ev) {}
@@ -154,13 +173,29 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 		}
 	}
 
-	@Override
-	public void keyReleased(KeyEvent ev) {
-	}
-
+	/**
+	 * Speed up with when ctrl is pressed down and slow down if shift if pressed
+	 */
 	@Override
 	public void keyPressed(KeyEvent event) {
+		if(event.getKeyCode() == KeyEvent.VK_SHIFT) {
+			state.setTimeFactor(.2);
+		} else if(event.getKeyCode() == KeyEvent.VK_CONTROL) {
+			state.setTimeFactor(2);
+		}
 	}
+
+	/**
+	 * Return speed to normal if ctrl or shift is released
+	 */
+	@Override
+	public void keyReleased(KeyEvent event) {
+		if(event.getKeyCode() == KeyEvent.VK_SHIFT ||
+		   event.getKeyCode() == KeyEvent.VK_CONTROL) {
+			state.setTimeFactor(1);
+		}
+	}
+
 
 	/**
 	 * Test if the controlled object is still inside the playing field
@@ -188,9 +223,25 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	}
 
 	/**
-	 * Make cursor transparent if game is not paused, revert to default cursor if game is paused.
+	 * Make cursor transparent if game is not paused, revert to default cursor if
+	 * game is paused.
 	 */
 	private void setCursor() {
-		component.setCursor(state.isPaused() || state.isGameOver() ? Cursor.getDefaultCursor() : blankCursor);
+		component.setCursor(state.isPaused() || state.isGameOver()
+		                    ? Cursor.getDefaultCursor() : blankCursor);
+	}
+
+	/**
+	 * Get the object controlled by this controller
+	 */
+	public Entity getControlledObject() {
+		return controlledObject;
+	}
+
+	/**
+	 * Set the controlled object
+	 */
+	public void setControlledObject(Entity controlledObject) {
+		this.controlledObject = controlledObject;
 	}
 }

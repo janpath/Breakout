@@ -24,11 +24,14 @@ import java.util.ArrayList;
 
 public class Engine implements Runnable {
 	/**
+<<<<<<< HEAD
 	 * game state
 	 */
 	private GameState state;
 
 	/**
+=======
+>>>>>>> branch 'master' of https://github.com/janpath/Breakout.git
 	 * Playing field
 	 */
 	private static final double PLAYING_FIELD_HEIGHT = 130;
@@ -66,7 +69,7 @@ public class Engine implements Runnable {
 	 */
 	private static final int REFRESH_RATE = 20;
 
-	
+	private GameState state;
 
 	public Engine(GameState state) {
 		this.state = state;

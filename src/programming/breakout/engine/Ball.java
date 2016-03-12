@@ -29,6 +29,10 @@ import programming.breakout.engine.Vector2D;
 public class Ball extends Entity {
 	private double radius;
 
+	/**
+	 * @param position the initial position of the upper left corner of the ball
+	 * @param radius the radius of the ball
+	 */
 	public Ball(Vector2D position, double radius) {
 		setPosition(position);
 		this.radius = radius;
@@ -53,10 +57,15 @@ public class Ball extends Entity {
 	 */
 	@Override
 	public Rectangle getBounds() {
-		return new Rectangle(new Vector2D(getX() - radius, getY() - radius), 2 * radius, 2 * radius);
+		return new Rectangle(new Vector2D(getX() - radius, getY() - radius),
+		                     2 * radius, 2 * radius);
 	}
-	
+
+	/**
+	 * @return the position of the center of the ball.
+	 */
 	public Vector2D getCenter() {
-		return new Vector2D(this.getX() + this.getRadius(), this.getY() + this.getRadius());
+		return new Vector2D(this.getX() + this.getRadius(),
+		                    this.getY() + this.getRadius());
 	}
 }
