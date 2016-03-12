@@ -44,7 +44,7 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	private Component component;
 	private Robot robot;
 
-	//Higher => lower sensitvity
+	// Higher => lower sensitvity
 	private static final double MOUSE_SENSITIVITY = 500;
 
 	private Cursor blankCursor = Toolkit.getDefaultToolkit()
@@ -66,13 +66,13 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 		this.freeY = y;
 		this.component = component;
 
-		//Add listeners
+		// Add listeners
 		component.addKeyListener(this);
 		component.addMouseListener(this);
 		component.addMouseMotionListener(this);
 		component.addFocusListener(this);
 
-		//Create Robot for mouse catching
+		// Create Robot for mouse catching
 		try {
 			robot = new Robot();
 		} catch(AWTException ex) {
@@ -113,12 +113,12 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 
 		// Make sure we don't move the object out of the playing field
 		Rectangle bounds = controlledObject.getBounds();
-		dx += Math.max(0, -(bounds.getX() + dx))
-			- Math.max(0, bounds.getX() + bounds.getWidth() + dx - state.getWidth());
-		dy += Math.max(0, -(bounds.getY() + dy))
-			- Math.max(0, bounds.getY() + bounds.getHeight() + dy - state.getHeight());
+		dx += Math.max(0, -(bounds.getX() + dx)) -
+			Math.max(0, bounds.getX() + bounds.getWidth() + dx - state.getWidth());
+		dy += Math.max(0, -(bounds.getY() + dy)) -
+			Math.max(0, bounds.getY() + bounds.getHeight() + dy - state.getHeight());
 
-		//Move controlledObject
+		// Move controlledObject
 		double newX = controlledObject.getX() + ((freeX) ? dx : 0);
 		double newY = controlledObject.getY() + ((freeY) ? dy : 0);
 
@@ -131,14 +131,16 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 
 		assert isInField(): "Controlled object moved out of playing field.";
 
-		//Keep mouse in component. Don't do this every event in order to ignore the align.
+		//Keep mouse in component. Don't do this every event in order to ignore the
+		//align.
 		if(Math.max(Math.abs(xMoved), Math.abs(yMoved)) > 0) {
 			alignMouse();
 		}
 	}
 
 	/**
-	 * Grab the focus to the GCanvas as soon as the mouse enters, for keyboard input
+	 * Grab the focus to the GCanvas as soon as the mouse enters, for keyboard
+	 * input
 	 */
 	@Override
 	public void mouseDragged(MouseEvent ev) {}
@@ -171,14 +173,9 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 		}
 	}
 
-	@Override
-	public void keyReleased(KeyEvent event) {
-		if(event.getKeyCode() == KeyEvent.VK_SHIFT ||
-		   event.getKeyCode() == KeyEvent.VK_CONTROL) {
-			state.setTimeFactor(1);
-		}
-	}
-
+	/**
+	 * Speed up with when ctrl is pressed down and slow down if shift if pressed
+	 */
 	@Override
 	public void keyPressed(KeyEvent event) {
 		if(event.getKeyCode() == KeyEvent.VK_SHIFT) {
@@ -187,6 +184,18 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 			state.setTimeFactor(2);
 		}
 	}
+
+	/**
+	 * Return speed to normal if ctrl or shift is released
+	 */
+	@Override
+	public void keyReleased(KeyEvent event) {
+		if(event.getKeyCode() == KeyEvent.VK_SHIFT ||
+		   event.getKeyCode() == KeyEvent.VK_CONTROL) {
+			state.setTimeFactor(1);
+		}
+	}
+
 
 	/**
 	 * Test if the controlled object is still inside the playing field
@@ -214,10 +223,12 @@ public class Controller implements MouseListener, MouseMotionListener, KeyListen
 	}
 
 	/**
-	 * Make cursor transparent if game is not paused, revert to default cursor if game is paused.
+	 * Make cursor transparent if game is not paused, revert to default cursor if
+	 * game is paused.
 	 */
 	private void setCursor() {
-		component.setCursor(state.isPaused() || state.isGameOver() ? Cursor.getDefaultCursor() : blankCursor);
+		component.setCursor(state.isPaused() || state.isGameOver()
+		                    ? Cursor.getDefaultCursor() : blankCursor);
 	}
 
 	/**
