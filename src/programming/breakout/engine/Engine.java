@@ -27,6 +27,7 @@ public class Engine implements Runnable {
 	/**
 	 * game state
 	 */
+	private GameState state;
 	private boolean isPaused = false;
 
 	/**
@@ -65,7 +66,7 @@ public class Engine implements Runnable {
 	 */
 	private static final int REFRESH_RATE = 20;
 
-	private GameState state;
+	
 
 	public Engine(GameState state) {
 		this.state = state;
@@ -174,7 +175,8 @@ public class Engine implements Runnable {
 		// get x and y values of the reference vector
 		double x = rect.getWidth() / 2 - referenceVector.getX0();
 		double y = rect.getHeight() / 2 - referenceVector.getX1();
-
+		
+		// get x and y values of the velocity vector
 		double xVel = ball.getVelocity().getX0();
 		double yVel = ball.getVelocity().getX1();
 
